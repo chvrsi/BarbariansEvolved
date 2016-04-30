@@ -68,6 +68,12 @@
 			<UnitType>UNIT_BARBARIAN_WORKER</UnitType>
 			<UnitAIType>UNITAI_WORKER</UnitAIType>
 		</Row>
+<!-- this will effectively give the Barbarian civ a starting unit (an enslaved worker)
+		<Row>
+			<UnitType>UNIT_BARBARIAN_WORKER</UnitType>
+			<UnitAIType>UNITAI_DEFENSE</UnitAIType>
+		</Row>
+-->
 		<Row>
 			<UnitType>UNIT_DIRTY_BOMB</UnitType>
 			<UnitAIType>UNITAI_ICBM</UnitAIType>

@@ -25,7 +25,7 @@ bDisableBarbSpawnForMe = true
 
 bDisableSponsoredSpawns = false
 
-iSpawnChance = Game.GetHandicapType()
+iSpawnChance = PreGame.GetHandicap()
 
 bDisableBarbEvolution = false
 
@@ -59,6 +59,14 @@ bBarbEraNameChange = true
 -- reduce workload of CBP turns by deferring name change
 bDeferNameChange = true
 
+sBarbAdjDefault = "Barbarian"
+
+sBarbDescrDefault = "Barbarian"
+
+sBarbShortDefault = "Barbarians"
+
+sBarbCampDefault = "Encampment"
+
 arrBarbNames = {}
 
 arrEra = {"ERA_ANCIENT", "Barbarian", "Barbarism", "Barbarians", "Encampment"}
@@ -85,8 +93,16 @@ table.insert(arrBarbNames, arrEra)
 arrEra = {"ERA_FUTURE", "Terrorist", "Anarchy", "Terrorists", "Training Camp"}
 table.insert(arrBarbNames, arrEra)
 
-sLanguageTable = "language_en_US"
+bDisableBuildingEncampmentsForAll = false
+
+bDisableBuildingEncampmentsForOthers = false
+
+sLanguageTable = "language_" .. Locale.GetCurrentLanguage().Type
 
 iBarbNukeLimit = 2
 
 iBarbWorkerLimit = 4
+
+sMinorPlayerColor = "PLAYERCOLOR_BARBARIAN"
+
+sMajorPlayerColor = "PLAYERCOLOR_BARBARIAN_MAJOR"

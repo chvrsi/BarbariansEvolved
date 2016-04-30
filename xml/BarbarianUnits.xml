@@ -65,4 +65,16 @@
 			</Set>
 		</Update>
 	</Units>
+	<!-- This will effectively give the Barbarians a starting unit (the game picks the most expensive unit with defensiev AI that has no tech requirement)
+	<Unit_AITypes>
+		<Row>
+			<UnitType>UNIT_BARBARIAN_WARRIOR</UnitType>
+			<UnitAIType>UNITAI_ATTACK</UnitAIType>
+		</Row>
+		<Row>
+			<UnitType>UNIT_BARBARIAN_WARRIOR</UnitType>
+			<UnitAIType>UNITAI_DEFENSE</UnitAIType>
+		</Row>
+	</Unit_AITypes>
+	-->
 </GameData>

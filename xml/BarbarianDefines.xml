@@ -39,5 +39,10 @@
 			<Where Name="AI_TACTICAL_BARBARIAN_RELEASE_VARIATION"/>
 			<Set Value="1"/>
 		</Update>
+		<!-- Remove XP cap (was 30) -->
+		<Update>
+			<Where Name="BARBARIAN_MAX_XP_VALUE"/>
+			<Set Value="-1"/>
+		</Update>
 	</Defines>
 </GameData>

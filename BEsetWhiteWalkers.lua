@@ -11,7 +11,7 @@ bConservativeMode = false
 
 iBaseTurnsPerBarbEvolution = 20
 
-bRagingBarbarians = false
+bRagingBarbarians = true
 
 bDisableBarbHealing = false
 
@@ -23,7 +23,7 @@ bDisableBarbSpawnForMe = true
 
 bDisableSponsoredSpawns = false
 
-iSpawnChance = Game.GetHandicapType()
+iSpawnChance = 7
 
 bDisableBarbEvolution = false
 
@@ -37,11 +37,11 @@ bDisableGlobalUpgrade = false
 
 bDisableGlobalUpgradeForMe = true
 
-sBarbLiberateTo = "CIVILIZATION_BARBARIAN"
+sBarbLiberateTo = "CIVILIZATION_INTENTIONALLY_INVALID"
 
 bBarbDisperseOnLiberate = true
 
-sBarbMajorAlly = "CIVILIZATION_BARBARIAN_MAJOR"
+sBarbMajorAlly = "CIVILIZATION_INTENTIONALLY_INVALID"
 
 -- added promotions to copy units, leech health, etc
 arrBarbLandUnitPromotions = {"PROMOTION_EMBARKATION", "PROMOTION_EVOLVED_FORCES", "PROMOTION_IGNORE_TERRAIN_COST", "PROMOTION_PRIZE_SHIPS", "PROMOTION_FASTER_HEAL", "PROMOTION_PARTIAL_HEAL_IF_DESTROY_ENEMY"}
@@ -51,9 +51,17 @@ arrBarbSeaUnitPromotions = {"PROMOTION_PRIZE_SHIPS"}
 arrBarbAirUnitPromotions = {}
 
 -- set this to false if using the White Walkers mod
-bBarbEraNameChange = true
+bBarbEraNameChange = false
 
 bDeferNameChange = false
+
+sBarbAdjDefault = "Undead"
+
+sBarbDescrDefault = "The Walking Dead"
+
+sBarbShortDefault = "The Walking Dead"
+
+sBarbCampDefault = "Infestation"
 
 arrBarbNames = {}
 
@@ -82,8 +90,16 @@ table.insert(arrBarbNames, arrEra)
 arrEra = {"ERA_FUTURE", "Undead", "the Walking Dead", "Walkers", "Outbreak"}
 table.insert(arrBarbNames, arrEra)
 
-sLanguageTable = "language_en_US"
+bDisableBuildingEncampmentsForAll = true
+
+bDisableBuildingEncampmentsForOthers = true
+
+sLanguageTable = "language_" .. Locale.GetCurrentLanguage().Type
 
 iBarbNukeLimit = 2
 
 iBarbWorkerLimit = 4
+
+sMinorPlayerColor = "PLAYERCOLOR_BARBARIAN_NIGHTMARE"
+
+sMajorPlayerColor = "PLAYERCOLOR_BARBARIAN_NIGHTMARE"

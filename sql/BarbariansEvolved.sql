@@ -7,6 +7,9 @@ DELETE FROM Civilization_UnitClassOverrides WHERE CivilizationType = 'CIVILIZATI
 -- Remove Barbarian combat penalties and increase acquisition range; ranges were 8 and 20 respectively
 UPDATE HandicapInfos SET BarbarianBonus = 0, AIBarbarianBonus = 0, BarbarianLandTargetRange = 100, BarbarianSeaTargetRange = 100 WHERE IconAtlas = 'DIFFICULTY_ATLAS';
 
+-- Update Barbarian strings
+UPDATE Civilizations SET Description = 'TXT_KEY_CIV_BARBARIAN_TRIBAL_DESC', Adjective = 'TXT_KEY_CIV_BARBARIAN_TRIBAL_ADJECTIVE', ShortDescription = 'TXT_KEY_CIV_BARBARIAN_TRIBAL_SHORT_DESC' WHERE Type = 'CIVILIZATION_BARBARIAN';
+
 -- Block Barbarians from Policies (doesn't work)
 -- INSERT INTO Policy_Disables (PolicyType, PolicyDisable) SELECT 'POLICY_BARBARIC', Type FROM Policies WHERE Type <> 'POLICY_BARBARIC';
 

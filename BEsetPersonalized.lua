@@ -64,7 +64,7 @@ bDisableSponsoredSpawns = false
 
 -- Spawn chance (1-10, each number = 10%).  Doubled if bRagingBarbarians is true.  Doubled again if city has taken damage.
 -- Default = Game Difficulty (Settler = 0, and so on to Deity = 7).
-iSpawnChance = Game.GetHandicapType()
+iSpawnChance = PreGame.GetHandicap()
 
 -- DO BARBARIANS SPAWN CITIES?
 --
@@ -167,6 +167,17 @@ bBarbEraNameChange = true
 -- Meaningless if bBarbEraNameChange is false.
 bDeferNameChange = false
 
+-- WHAT DO WE CALL BARBARIANS?
+--
+-- Used if bBarbEraNameChange is set to false
+sBarbAdjDefault = "Barbarian"
+
+sBarbDescrDefault = "Barbarian"
+
+sBarbShortDefault = "Barbarians"
+
+sBarbCampDefault = "Encampment"
+
 -- WHAT DO WE CALL BARBARIANS AS THE ERAS PASS?
 --
 -- Barbarians can change names as the eras pass.  This is an array.  The format is:
@@ -199,9 +210,20 @@ table.insert(arrBarbNames, arrEra)
 arrEra = {"ERA_FUTURE", "Terrorist", "Anarchy", "Terrorists", "Training Camp"}
 table.insert(arrBarbNames, arrEra)
 
+-- DO WE ALLOW STATE SPONSORED BARBARIAN CAMPS?
+--
+-- State-Sponsored Encampments may be built which spawn barbarians.  Do we allow this to happen?
+-- If TRUE, the building of such camps is disabled...
+--
+-- For everyone, including Barbarians:
+bDisableBuildingEncampmentsForAll = false
+
+-- For non-Barbarian players:
+bDisableBuildingEncampmentsForOthers = false
+
 -- change this to your language locale.  Your options are:
 -- language_en_US, language_DE_DE, language_ES_ES, language_FR_FR, language_IT_IT, language_JA_JP, language_KO_KR, language_PL_PL, language_RU_RU, language_ZH_HANT_NK
-sLanguageTable = "language_en_US"
+sLanguageTable = "language_" .. Locale.GetCurrentLanguage().Type
 
 -- WHAT LIMITS ARE PLACED ON WORKERS AND INFILTRATORS?
 --
@@ -217,33 +239,8 @@ iBarbWorkerLimit = 4
 -- DO WE OVERRIDE BARBARIAN COLORS?
 --
 -- Allows you to set icon/background colors without XML editing.
--- If this option is true, the following RGB + Alpha values are used for the major and minor civs.
--- Note you must supply all eight or bad things will happen.
--- To determine a number, take the 0-256 value you want and divide it by 256.  i.e. RGB 192,0,0 = RGB 0.75,0,0
--- 
--- NOT YET IMPLEMENTED.  DO NOT BOTHER CHANGING; IT WONT WORK.
-bOverrideBarbColors = false
+-- If you like you can change this to some other predefined PLAYERCOLOR_* string.
 
--- Minor Foreground RGB+A (icon)
-iMinorForeR = 0.5
-iMinorForeG = 0
-iMinorForeB = 0
-iMinorForeA = 1
+sMinorPlayerColor = "PLAYERCOLOR_BARBARIAN"
 
--- Minor Background RGB+A
-iMinorBackR = 0
-iMinorBackG = 0
-iMinorBackB = 0
-iMinorBackA = 1
-
--- Major Foreground RGB+A (icon)
-iMajorForeR = 0.75
-iMajorForeG = 0
-iMajorForeB = 0
-iMajorForeA = 1
-
--- Major Background RGB+A
-iMajorBackR = 0
-iMajorBackG = 0
-iMajorBackB = 0
-iMajorBackA = 1
+sMajorPlayerColor = "PLAYERCOLOR_BARBARIAN_MAJOR"

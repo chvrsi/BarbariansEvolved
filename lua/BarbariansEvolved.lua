@@ -3,6 +3,8 @@
 -- DateCreated: 07/18/2015 7:46:51 PM
 --------------------------------------------------------------
 
+include( "BarbariansEvolvedSharedFunctions" );
+
 --########################################################################
 -- SQL fetch best-in-class (ranged)
 function GetBestRangedCombat(pPlayer, cachetype, sql)
@@ -263,20 +265,25 @@ function BarbEvolvedCityCapture(vHexPos, oldOwner, cityID, newOwner)
 
 	local sCityName = pCity:GetName()
 
-	-- If the city wasn't ever Barbarian, and is now, send out a notification
-	-- Note: this will send out notifications on liberation, too!
-	if IsBarbaricCiv(newOwner) and not IsBarbaricCiv(oldOwner) then
-		local pActivePlayer = Players[Game.GetActivePlayer()]
-		local sTitle = sCityName .. " has fallen into the hands of Barbarians!"
-		local sText = "Travellers report that the city of " .. sCityName .. " has fallen into the hands of Barbarians!  With each fallen city, the light of Civilization grows dimmer!"
+	-- If the city wasn't ever Barbarian, and is now...
+	if IsBarbaricCiv(newOwner) and not IsBarbaricCiv(oldOwner) and not IsBarbaricCiv(Game.GetActivePlayer()) then
+		-- If the new owner is:
+		-- a) Barbarian Civilization, or
+		-- b) there is no Barbarian Civilization in-game
+		-- ... send out a notification (this prevents erroneous notification when a Civilized power "liberates" a Barbarian Civilization city to Tribal Barbarians)
+		if IsBarbMajorCiv(newOwner) or not isUsingBarbarianCiv then
+			local pActivePlayer = Players[Game.GetActivePlayer()]
+			local sTitle = sCityName .. " has fallen into the hands of " .. sBarbShortDefault .. "!"
+			local sText = "Travellers report that the city of " .. sCityName .. " has fallen into the hands of " .. sBarbShortDefault .. "!  With each fallen city, the light of Civilization grows dimmer!"
 
-		-- override if we are using renaming and have reached at least the first period-appropriate array element
-		if bBarbEraNameChange and (iMinEraId > -1) then
-			sTitle = sCityName .. " has fallen into the hands of " .. arrBarbNames[iMinEraId][4] .. "!"
-			sText = "Travellers report that the city of " .. sCityName .. " has fallen into the hands of " .. arrBarbNames[iMinEraId][4] .. "!  With each fallen city, the light of Civilization grows dimmer!"
+			-- override if we are using renaming and have reached at least the first period-appropriate array element
+			if bBarbEraNameChange and (iMinEraId > -1) then
+				sTitle = sCityName .. " has fallen into the hands of " .. arrBarbNames[iMinEraId][4] .. "!"
+				sText = "Travellers report that the city of " .. sCityName .. " has fallen into the hands of " .. arrBarbNames[iMinEraId][4] .. "!  With each fallen city, the light of Civilization grows dimmer!"
+			end
+
+			pActivePlayer:AddNotification(NotificationTypes.NOTIFICATION_GENERIC, sText, sTitle, pCity:GetX(), pCity:GetY())
 		end
-
-		pActivePlayer:AddNotification(NotificationTypes.NOTIFICATION_GENERIC, sText, sTitle, pCity:GetX(), pCity:GetY())
 	end
 
 	print("BarbEvolvedCityCapture: City [" .. sCityName .. "] changes hands: from [" .. oldOwner .. "] to [" .. newOwner .. "]")
@@ -294,6 +301,62 @@ function BarbEvolvedCityCapture(vHexPos, oldOwner, cityID, newOwner)
 
 			-- note... this call should trigger BarbEvolvedCityCapture again!
 			pBarbAlly:AcquireCity(pCity, true, false)
+		end
+	end
+end
+
+--########################################################################
+-- resuable "Are State-Sponsored Encampments allowed" check
+function StateSponsoredEncampmentDisabled()
+	local bDisableEncampments = false
+
+	if (Game.GetActivePlayer() ~= iBarbCivID) and bDisableBuildingEncampmentsForOthers then
+		bDisableEncampments = true
+	end
+
+	if bDisableBuildingEncampmentsForAll then
+		bDisableEncampments = true
+	end
+
+	return bDisableEncampments
+end
+
+--########################################################################
+-- disable State-Sponsored Encampments
+function StateSponsoredEncampmentCheck()
+	local camptextsql = ""
+
+	print("Checking if we should disable State-Sponsored Encampments...")
+	if StateSponsoredEncampmentDisabled() then
+		print("StateSponsoredEncampmentCheck: State-Sponsored Encampments are Disabled; updating encampment tooltip.")
+		camptextsql = "UPDATE " .. sLanguageTable .. " SET Text = (SELECT Text FROM " .. sLanguageTable .. " WHERE Tag = 'TXT_KEY_BUILD_ENCAMPMENT_DISABLED') WHERE Tag = 'TXT_KEY_BUILD_ENCAMPMENT_HELP'"
+	else
+		print("StateSponsoredEncampmentCheck: State-Sponsored Encampments are Enabled; updating encampment tooltip.")
+		camptextsql = "UPDATE " .. sLanguageTable .. " SET Text = (SELECT Text FROM " .. sLanguageTable .. " WHERE Tag = 'TXT_KEY_BUILD_ENCAMPMENT_ENABLED') WHERE Tag = 'TXT_KEY_BUILD_ENCAMPMENT_HELP'"
+	end
+
+	for camprow in DB.Query(camptextsql) do
+	end
+
+	-- refresh text
+	Locale.SetCurrentLanguage( Locale.GetCurrentLanguage().Type )
+end
+
+--########################################################################
+-- disable/short-circuit Encampments if Encampment construction is disabled
+function BarbEvolvedStateSponsorBuildCheck(iHexX, iHexY, iContinent1, iContinent2, player, createImp, createImpRR)
+	local pPlot = Map.GetPlot(ToGridFromHex(iHexX, iHexY))
+	local iImprovement = pPlot:GetImprovementType()
+	local sImprovement = iImprovement > -1 and GameInfo.Improvements[iImprovement].Type or "Improvement in progress"
+	local iPlayerID = pPlot:GetOwner()
+	local plotOwner = iPlayerID > -1 and Players[iPlayerID]:GetName() or "nobody"
+
+	-- print(string.format("%s (%s,%s) built on tile %d, %d by player %d. Plot owned by %s", sImprovement, createImp, createImpRR, pPlot:GetX(), pPlot:GetY(), iPlayerID, plotOwner))
+
+	if (sImprovement == "IMPROVEMENT_EVOLVED_CAMP") then
+		if StateSponsoredEncampmentDisabled() then
+			print("BarbEvolvedStateSponsorBuildCheck: Detected finished construction of a disabled State-Sponsored camp; converting it immediately to a fort.")
+			pPlot:SetImprovementType(GameInfoTypes.IMPROVEMENT_FORT)
 		end
 	end
 end
@@ -708,8 +771,8 @@ function BarbEvolvedCivStartTurn(iPlayer)
 				FoundCity(pPlayer, pPlayer:GetStartingPlot():GetX(), pPlayer:GetStartingPlot():GetY())
 
 				local pActivePlayer = Players[Game.GetActivePlayer()]
-				local sTitle = "An Encampment has evolved!"
-				local sText = "A Barbarian Encampment has evolved into a city, adding to the ranks of " .. pPlayer:GetCivilizationDescription() .. "!"
+				local sTitle = "An " .. sBarbCampDefault .. " has evolved!"
+				local sText = "A " .. sBarbAdjDefault .. " " .. sBarbCampDefault .. " has evolved into a city, adding to the ranks of " .. pPlayer:GetCivilizationDescription() .. "!"
 
 				-- override if we are using renaming and have reached at least the first period-appropriate array element
 				if bBarbEraNameChange and (iMinEraId > -1) then
@@ -820,8 +883,8 @@ function BarbEvolvedCivStartTurn(iPlayer)
 						-- notify the active player of the conversion if the active player owns the nearby city
 						if (Game.GetActivePlayer() == pPlot:GetWorkingCity():GetOwner()) then
 							local pActivePlayer = Players[Game.GetActivePlayer()]
-							local sTitle = "State-Sponsored Encampment shuts down!"
-							local sText = "The encroachment of civilization has caused a State-Sponsored Encampment of Barbarians to shut down!  The fortification is converted and will no longer spawn Barbarians."
+							local sTitle = "State-Sponsored " .. sBarbCampDefault .. " shuts down!"
+							local sText = "The encroachment of civilization has caused a State-Sponsored " .. sBarbCampDefault .. " of " .. sBarbShortDefault .. " to shut down!  The fortification is converted and will no longer spawn Barbarians."
 
 							-- override if we are using renaming and have reached at least the first period-appropriate array element
 							if bBarbEraNameChange and (iMinEraId > -1) then
@@ -1113,8 +1176,8 @@ function EvolveDistantEncampment(inplayer, inunit)
 
 			if (iCityCountBefore ~= iCityCountAfter) then
 				local pActivePlayer = Players[Game.GetActivePlayer()]
-				local sTitle = "An Encampment has evolved!"
-				local sText = "A Barbarian Encampment has evolved into a city, adding to the ranks of " .. pRecipient:GetCivilizationDescription() .. "!"
+				local sTitle = "An " .. sBarbCampDefault .. " has evolved!"
+				local sText = "A " .. sBarbAdjDefault .. " " .. sBarbCampDefault .. " has evolved into a city, adding to the ranks of " .. pRecipient:GetCivilizationDescription() .. "!"
 
 				-- override if we are using renaming and have reached at least the first period-appropriate array element
 				if bBarbEraNameChange and (iMinEraId > -1) then
@@ -1254,8 +1317,8 @@ function SetComplexStrings(adj, descr, plural, camp)
 	-- then adjective ("Barbarism" or "Barbarian State") and downcased adjective
 	-- then descr ("Barbarian") and downcased descr
 	-- then camp ("Encampment") and downcased camp string
-	-- lastly, update the strings used as the "befores"
-    -- this should get us every instance in the entire database, in fewer SQL statements
+	-- lastly, update the strings used as the "befores", the strings used for tribal and the strings used for major barbs
+    -- this should get us every instance in the entire database
 	local tquery = {
 					"UPDATE " .. sLanguageTable .. " set Text = replace(text, '" .. oldplural .. "', '" .. plural .. "') where Text like '%" .. oldplural .. "%'",
 					"UPDATE " .. sLanguageTable .. " set Text = replace(text, '" .. string.lower(oldplural) .. "', '" .. string.lower(plural) .. "') where Text like '%" .. string.lower(oldplural) .. "%'",
@@ -1268,6 +1331,11 @@ function SetComplexStrings(adj, descr, plural, camp)
 					"UPDATE " .. sLanguageTable .. " SET Text = '".. adj .."' WHERE Tag = 'TXT_KEY_CIV_BARBARIAN_ADJECTIVE'",
 					"UPDATE " .. sLanguageTable .. " SET Text = '".. descr .."' WHERE Tag = 'TXT_KEY_CIV_BARBARIAN_DESC'",
 					"UPDATE " .. sLanguageTable .. " SET Text = '".. plural .."' WHERE Tag = 'TXT_KEY_CIV_BARBARIAN_SHORT_DESC'",
+					"UPDATE " .. sLanguageTable .. " SET Text = '".. adj .."' WHERE Tag = 'TXT_KEY_CIV_BARBARIAN_TRIBAL_ADJECTIVE'",
+					"UPDATE " .. sLanguageTable .. " SET Text = '".. descr .."' WHERE Tag = 'TXT_KEY_CIV_BARBARIAN_TRIBAL_DESC'",
+					"UPDATE " .. sLanguageTable .. " SET Text = '".. plural .."' WHERE Tag = 'TXT_KEY_CIV_BARBARIAN_TRIBAL_SHORT_DESC'",
+					"UPDATE " .. sLanguageTable .. " SET Text = '".. adj .."' WHERE Tag = 'TXT_KEY_CIV_BARBARIAN_MAJOR_ADJECTIVE'",
+					"UPDATE " .. sLanguageTable .. " SET Text = '".. descr .."' WHERE Tag = 'TXT_KEY_CIV_BARBARIAN_MAJOR_DESC'",
 					"UPDATE " .. sLanguageTable .. " SET Text = '".. plural .."' WHERE Tag = 'TXT_KEY_CIV_BARBARIAN_MAJOR_SHORT_DESC'"
 					}
 
@@ -1310,7 +1378,7 @@ end
 function CompleteBarbarianNameChange()
 	if bBarbNamesChanged then
 		-- issue refresh
-		print("CompleteBarbarianNameChange: Updating texts and issuing refresh.")
+		print("CompleteBarbarianNameChange: Updating texts and issuing refresh on [" .. sLanguageTable .. "].")
 		SetComplexStrings(arrBarbNames[iMinEraId][2], arrBarbNames[iMinEraId][3], arrBarbNames[iMinEraId][4], arrBarbNames[iMinEraId][5])
 		RefreshText()
 		bBarbNamesChanged = false
@@ -1354,6 +1422,13 @@ function InitBarbMajorCiv()
 
 	-- WAR LOOP
 	AssertBarbarianStateOfWar()
+
+	-- Assert names (if not changing with the eras)
+	if (bBarbEraNameChange == false) then
+		print("InitBarbMajorCiv: Names will NOT be changing through the eras.  Performing one-time update of texts with refresh on [" .. sLanguageTable .. "].")
+		SetComplexStrings(sBarbAdjDefault, sBarbDescrDefault, sBarbShortDefault, sBarbCampDefault)
+		RefreshText()
+	end
 
 	print("InitBarbMajorCiv exiting.")
 end
@@ -1882,12 +1957,38 @@ print("-------------------- Barbarians Evolved Load Start --------------------")
 
 --########################################################################
 -- End-User Customizable Settings
+print("-- LOADING DEFAULTS FROM FILE --")
+
+-- a necessary evil because it establishes all of the variables as global
 include("BEsettings")
 
+userData = Modding.OpenUserData("BE", 1)
+saveData = Modding.OpenSaveData()
+
+if BEDataExists(saveData) then
+	print("-- LOADING SETTINGS FROM SAVE GAME --")
+	BEReadData(saveData)
+	print("-- SETTINGS WILL NOT BE WRITTEN BACK TO SAVE GAME --")
+else
+	if BEDataExists(userData) then
+		-- we came via Custom Game
+		print("-- LOADING SETTINGS FROM CUSTOM GAME SETUP SCREEN --")
+		BEReadData(userData)
+	end
+	print("-- COMMITTING GAME SETTINGS TO SAVE GAME --")
+	BEWriteData(saveData)
+end
+
+-- wipe out stale user data
+print("Deleting stale user data...");
+Modding.DeleteUserData("BE", 1);
+
+--[[
 print("iBaseTurnsPerBarbEvolution: [" .. iBaseTurnsPerBarbEvolution .. "]")
 print("iSpawnChance: [" .. iSpawnChance .. "]")
 print("iBarbNukeLimit: [" .. iBarbNukeLimit .. "]")
 print("iBarbWorkerLimit: [" .. iBarbWorkerLimit .. "]")
+]]--
 
 --########################################################################
 -- Globals and pre-game settings -- DON'T CHANGE THESE
@@ -1938,6 +2039,8 @@ if bRagingBarbarians then
 	iTurnsPerBarbEvolution = iTurnsPerBarbEvolution / 2
 end
 ]]--
+
+StateSponsoredEncampmentCheck()
 
 techsql = "SELECT MAX(ID) as ID FROM Technologies"
 for techrow in DB.Query(techsql) do
@@ -1995,6 +2098,12 @@ else
 	PreGame.SetLeaderType(iBarbNPCs, GameInfo.Leaders["LEADER_BARBARIAN_EVOLVED"].ID)
 end
 
+print("Assigning Barbarian colors...")
+if isUsingBarbarianCiv and IsDefaultBarbMajorCiv() then
+	PreGame.SetPlayerColor(iBarbMajorAlly, GameInfo.PlayerColors[sMajorPlayerColor].ID);
+end
+PreGame.SetPlayerColor(iBarbNPCs, GameInfo.PlayerColors[sMinorPlayerColor].ID);
+
 print("Hooking functions...")
 
 Events.LoadScreenClose.Add(InitBarbMajorCiv);
@@ -2004,6 +2113,7 @@ Events.SequenceGameInitComplete.Add(BarbEvolvedNPCPolicyWindback);
 Events.SpecificCityInfoDirty.Add(BarbEvolvedCityUpdate);
 Events.ActivePlayerTurnStart.Add(BarbEvolvedActivePlayerStartTurn);
 Events.SerialEventCityCaptured.Add(BarbEvolvedCityCapture);
+Events.SerialEventImprovementCreated.Add(BarbEvolvedStateSponsorBuildCheck);
 GameEvents.PlayerDoTurn.Add(BarbEvolvedCivStartTurn);
 GameEvents.PlayerCanTrain.Add(BarbPlayersCantTrainSpecificUnits);
 GameEvents.CityCanTrain.Add(BarbCitiesCantTrainSpecificUnits);
