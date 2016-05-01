@@ -34,6 +34,7 @@ sBarbLiberateTo = "CIVILIZATION_BARBARIAN"
 bBarbDisperseOnLiberate = true
 sBarbMajorAlly = "CIVILIZATION_BARBARIAN_MAJOR"
 bBarbMajorAllyExists = true
+bBarbMajorAllyAsMe = false
 arrBarbLandUnitPromotions = {"PROMOTION_EVOLVED_FORCES"}
 arrBarbSeaUnitPromotions = {}
 arrBarbAirUnitPromotions = {}
@@ -121,7 +122,20 @@ end
 Controls.BackButton:RegisterCallback( Mouse.eLClick, BackButtonClicked );
 
 -------------------------------------------------
--- Advanced (Next) Button Handler
+-- Basic Button Handler
+-------------------------------------------------
+--[[
+function BasicClicked()
+	print("BasicClicked()");
+	CommitSettings();
+	UIManager:DequeuePopup( ContextPtr );
+	UIManager:QueuePopup( Controls.GameSetupScreen, PopupPriority.GameSetupScreen );
+end
+Controls.BasicButton:RegisterCallback( Mouse.eLClick, BasicClicked );
+]]--
+
+-------------------------------------------------
+-- Advanced Button Handler
 -------------------------------------------------
 function AdvancedClicked()
 	print("AdvancedClicked()");
@@ -171,6 +185,7 @@ function PresetPicked()
 	-- unhide the 2nd and 3rd panels
 	Controls.BEOptionButton:SetHide(false)
 	Controls.BEStringButton:SetHide(false)
+	-- Controls.BasicButton:SetHide(false)
 	Controls.AdvancedButton:SetHide(false)
 	-- move to the 2nd panel
 	OnCategory(2)
@@ -202,6 +217,8 @@ function ApplyPreset()
 	-- general checkbox options
 	Controls.AllyOption:SetCheck(bBarbMajorAllyExists == true)			-- checked means YES
 	Controls.AllyOption:RegisterCheckHandler(function (bCheck) bBarbMajorAllyExists = bCheck end);
+	Controls.AllyMeOption:SetCheck(bBarbMajorAllyAsMe == true)			-- checked means YES
+	Controls.AllyMeOption:RegisterCheckHandler(function (bCheck) bBarbMajorAllyAsMe = bCheck end);
 	Controls.EraOption:SetCheck(bBarbEraNameChange == true)				-- checked means YES
 	Controls.EraOption:RegisterCheckHandler(function (bCheck) bBarbEraNameChange = bCheck end);
 	Controls.EraDefer:SetCheck(bDeferNameChange == true)				-- checked means YES
@@ -278,6 +295,7 @@ function PresetVanilla()
 
 	-- newer params
 	bBarbMajorAllyExists = true
+	bBarbMajorAllyAsMe = false
 
 	ApplyPreset();
 end
@@ -293,6 +311,7 @@ function PresetDLL()
 
 	-- newer params
 	bBarbMajorAllyExists = true
+	bBarbMajorAllyAsMe = false
 
 	ApplyPreset();
 end
@@ -308,6 +327,7 @@ function PresetMinimal()
 
 	-- newer params
 	bBarbMajorAllyExists = false
+	bBarbMajorAllyAsMe = false
 
 	ApplyPreset();
 end
@@ -323,6 +343,7 @@ function PresetNightmare()
 
 	-- newer params
 	bBarbMajorAllyExists = false
+	bBarbMajorAllyAsMe = false
 
 	ApplyPreset();
 end
@@ -634,9 +655,13 @@ function CommitSettings()
 
 	print("Checking if Barbarian ally is valid...")
 	if (oAlly ~= nil) then
-		print("Ally is valid.  Checking if we should pre-set slot 1...")
+		print("Ally is valid.  Checking if we should pre-set slot 0 or 1...")
 		if bBarbMajorAllyExists then
-			if (oAlly ~= nil) then
+			if bBarbMajorAllyAsMe then
+				print("Placed the Barbarian ally in slot 0.")
+				PreGame.SetCivilization(0, GameInfo.Civilizations[sBarbMajorAlly].ID);
+				PreGame.SetPlayerColor(0, GameInfo.PlayerColors[sMajorPlayerColor].ID);
+			else
 				print("Placed the Barbarian ally in slot 1.")
 				PreGame.SetCivilization(1, GameInfo.Civilizations[sBarbMajorAlly].ID);
 				PreGame.SetPlayerColor(1, GameInfo.PlayerColors[sMajorPlayerColor].ID);

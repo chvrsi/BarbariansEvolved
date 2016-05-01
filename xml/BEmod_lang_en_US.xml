@@ -27,6 +27,12 @@
 		<Row Tag="TXT_KEY_BESETTING_LABEL_BARBARIAN_STRINGS">
 			<Text>BARBARIAN STRINGS</Text>
 		</Row>
+		<Row Tag="TXT_KEY_BESETTING_LABEL_BASIC_SETUP">
+			<Text>Basic Setup</Text>
+		</Row>
+		<Row Tag="TXT_KEY_BESETTING_LABEL_ADVANCED_SETUP">
+			<Text>Advanced Setup</Text>
+		</Row>
 		<!-- presets (tab 1) -->
 		<Row Tag="TXT_KEY_BE_PRESET_VANILLA">
 			<Text>Barbarians Evolved</Text>
@@ -120,7 +126,7 @@
 			<Text>Defines whether Barbarians are allowed to capture cities.</Text>
 		</Row>
 		<Row Tag="TXT_KEY_BESETTING_LABEL_CAPTURE_MELEE">
-			<Text>Melee City Capture</Text>
+			<Text>Require Melee Unit</Text>
 		</Row>
 		<Row Tag="TXT_KEY_BESETTING_LABEL_CAPTURE_MELEE_TIP">
 			<Text>Defines whether Barbarians must have a melee unit in proximity in order to capture a city.</Text>
@@ -159,8 +165,14 @@
 			<Text>Add Barbarian Civilization to This Game</Text>
 		</Row>
 		<Row Tag="TXT_KEY_BESETTING_LABEL_ALLY_INGAME_TIP">
-			<Text>Place the specified Barbarian Civilization into the game in the first AI slot.  You can always add it or remove it in the next screen if you change your mind.[NEWLINE][COLOR_NEGATIVE_TEXT]WARNING:[ENDCOLOR] If you want to play the Barbarians yourself, uncheck this box!</Text>
+			<Text>Place the specified Barbarian Civilization into the game in the first AI slot.  You can always add it or remove it in the next screen if you change your mind.</Text>
 		</Row>
+		<Row Tag="TXT_KEY_BESETTING_LABEL_ALLY_INGAME_ASME">
+			<Text>Play as Barbarians</Text>
+		</Row>
+		<Row Tag="TXT_KEY_BESETTING_LABEL_ALLY_INGAME_ASME_TIP">
+			<Text>Set your civilization as the Barbarian Civilization.  [NEWLINE][COLOR_NEGATIVE_TEXT]WARNING:[ENDCOLOR] Removes the Barbarian AI player, as only one player can be the Barbarian Civilization at any given time.</Text>
+		</Row>		
 		<Row Tag="TXT_KEY_BESETTING_LABEL_LAND_PROMO">
 			<Text>Land Promotions</Text>
 		</Row>
