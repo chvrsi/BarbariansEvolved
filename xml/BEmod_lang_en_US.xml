@@ -355,7 +355,7 @@
 			<Text>Ashes to Ashes</Text>
 		</Row>
 		<Row Tag="TXT_KEY_TRAIT_BARBAROUS">
-			<Text>Reject Settlers, wonders, trade and more, in favor of glorious WAR!  Pay no [ICON_GOLD] Unit Maintenance and suffer no [ICON_HAPPINESS_4] Unhappiness.  Inherit cities and technology from your Barbarian ally.  Build military units twice as fast and cross impassable terrain.</Text>
+			<Text>Reject Settlers, wonders, trade and more, in favor of glorious WAR!  Pay no [ICON_GOLD] Unit Maintenance and suffer no [ICON_HAPPINESS_4] Unhappiness.  Inherit cities and technology from your Barbarian ally.  Build units twice as fast that can cross all terrain.</Text>
 		</Row>
 		<Row Tag="TXT_KEY_CIV5_DAWN_BARBARIAN_TEXT">
 			<Text>

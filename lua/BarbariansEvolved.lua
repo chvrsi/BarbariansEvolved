@@ -1147,9 +1147,9 @@ function EvolveDistantEncampment(inplayer, inunit)
 
 			if pRecipient:CanFound(thisx, thisy) then
 				print("EvolveDistantEncampment: Spawning city at [" .. thisx .. "] [" .. thisy .. "]")
-				if (isUsingDummyCiv and Players[iDummyCiv]:IsEverAlive() and not IsBarbMajorCiv(iDummyCiv) and iCityCountBefore > 0) then
+				if (isUsingDummyCiv and Players[iDummyCiv]:IsEverAlive() and not IsBarbMajorCiv(iDummyCiv) and iCityCountBefore > 0 and inplayer ~= Game.GetActivePlayer()) then
 				-- if (isUsingDummyCiv and Players[iDummyCiv]:IsEverAlive()) then
-					print("EvolveDistantEncampment: Liberation civ exists - spawning under the ownership of the Liberation civ then acquiring to Barbarians...")
+					print("EvolveDistantEncampment: Liberation civ exists - spawning under the ownership of the Liberation civ then acquiring to recipient...")
 					-- Players[iDummyCiv]:Found(thisx, thisy)
 					FoundCity(Players[iDummyCiv], thisx, thisy)
 					local pNewCityPlot = Map.GetPlot(thisx, thisy)
@@ -1164,7 +1164,7 @@ function EvolveDistantEncampment(inplayer, inunit)
 						print("EvolveDistantEncampment: FoundCity() call for Liberation civ must have failed or been delayed (null city pointer from plot)!")
 					end
 				else
-					print("EvolveDistantEncampment: Capital city or no Liberation civ - spawning city under the ownership of the Barbarians...")
+					print("EvolveDistantEncampment: Capital city, human Barbarian or no Liberation civ ingame - spawning city under the direct ownership of the recipient...")
 					-- pRecipient:Found(thisx, thisy)
 					FoundCity(pRecipient, thisx, thisy)
 				end
@@ -2100,7 +2100,7 @@ end
 
 print("Assigning Barbarian colors...")
 if isUsingBarbarianCiv and IsDefaultBarbMajorCiv() then
-	PreGame.SetPlayerColor(iBarbMajorAlly, GameInfo.PlayerColors[sMajorPlayerColor].ID);
+	PreGame.SetPlayerColor(iBarbMajorCiv, GameInfo.PlayerColors[sMajorPlayerColor].ID);
 end
 PreGame.SetPlayerColor(iBarbNPCs, GameInfo.PlayerColors[sMinorPlayerColor].ID);
 
