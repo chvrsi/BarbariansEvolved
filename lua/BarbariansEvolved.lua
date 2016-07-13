@@ -1025,7 +1025,7 @@ function Evolve()
 	if isUsingBarbarianCiv then
 		EvolveDistantEncampment(iBarbMajorCiv, nil)
 	else
-		EvolveDistantEncampment(iPlayer, nil)
+		EvolveDistantEncampment(iBarbNPCs, nil)
 	end
 end
 
