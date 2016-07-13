@@ -23,11 +23,13 @@ bDisableBarbSpawnForMe = true
 
 bDisableSponsoredSpawns = false
 
-iSpawnChance = PreGame.GetHandicap()
+iSpawnChance = 4
 
 bDisableBarbEvolution = true
 
 bBarbEvolveSettlers = false
+
+bBarbEvolveCityStates = false
 
 bDisableBarbCapture = true
 

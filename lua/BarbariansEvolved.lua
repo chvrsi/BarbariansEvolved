@@ -100,19 +100,40 @@ function BarbEvolvedPlotCheck(pPlayer, pPlot, iNumTechs)
 	]]--
 
 	-- do we spawn?
-	if (spawnchance < spawnlimit) then
-		print("BarbEvolvedPlotCheck: Spawning unit on plot [" .. pPlot:GetX() .. "," .. pPlot:GetY() .. "]")
+	if (Game.GetElapsedGameTurns() == 0) and pPlot:IsStartingPlot() then
+		-- spawn a defending scout on turn 0
+		-- whose plot is this?
+		local sPlotOwner = ""
 
-		local retID = BarbUnitHeirarchy(pPlayer, pPlot, iNumTechs)
-
-		if retID ~= "-1" then
-			-- always spawn the unit under the ownership of the MINOR barbarians
-			Players[iBarbNPCs]:InitUnit(retID, pPlot:GetX(), pPlot:GetY(), UNITAI_ATTACK)
-		else
-			print("BarbEvolvedPlotCheck: No unit of that type can be trained. Spawn aborted.")
+		for iCityState = GameDefines.MAX_MAJOR_CIVS, GameDefines.MAX_CIV_PLAYERS - 1, 1 do
+			local pCityState = Players[iCityState]
+			local pCSPlot = pCityState:GetStartingPlot()
+			if pCSPlot == pPlot then
+				-- spawn the barb (note: this should only trigger once)
+				print("BarbEvolvedPlotCheck: Spawning a turn 0 unit on plot [" .. pPlot:GetX() .. "," .. pPlot:GetY() .. "] for [" .. pCityState:GetName() .. "]")
+				newbarb = Players[iBarbNPCs]:InitUnit(GameInfoTypes.UNIT_IMMOBILE_SETTLER, pPlot:GetX(), pPlot:GetY(), UNITAI_DEFENSE)
+				if (newbarb ~= nil) then
+					-- rename the barb
+					newbarb:SetName(pCityState:GetCivilizationAdjective() .. " " .. newbarb:GetName())
+				end
+			end
 		end
 	else
-		print("BarbEvolvedPlotCheck: Chose not to spawn unit on plot [" .. pPlot:GetX() .. "," .. pPlot:GetY() .. "]")
+		-- normal logic
+		if (spawnchance < spawnlimit) then
+			print("BarbEvolvedPlotCheck: Spawning unit on plot [" .. pPlot:GetX() .. "," .. pPlot:GetY() .. "]")
+
+			local retID = BarbUnitHeirarchy(pPlayer, pPlot, iNumTechs)
+
+			if retID ~= "-1" then
+				-- always spawn the unit under the ownership of the MINOR barbarians
+				Players[iBarbNPCs]:InitUnit(retID, pPlot:GetX(), pPlot:GetY(), GameInfo.UnitAIInfos[GameInfo.Units[retID].DefaultUnitAI].ID)
+			else
+				print("BarbEvolvedPlotCheck: No unit of that type can be trained. Spawn aborted.")
+			end
+		else
+			print("BarbEvolvedPlotCheck: Chose not to spawn unit on plot [" .. pPlot:GetX() .. "," .. pPlot:GetY() .. "]")
+		end
 	end
 end
 
@@ -163,7 +184,7 @@ function BarbEvolvedGarrisonCheck(pPlayer, pCity, iNumTechs)
 			if retID ~= "-1" then
 				if pCity:CanTrain(retID) then
 					-- always spawn the unit under the ownership of the MINOR barbarians
-					Players[iBarbNPCs]:InitUnit(retID, pCity:GetX(), pCity:GetY(), UNITAI_ATTACK)
+					Players[iBarbNPCs]:InitUnit(retID, pCity:GetX(), pCity:GetY(), GameInfo.UnitAIInfos[GameInfo.Units[retID].DefaultUnitAI].ID)
 				else
 					print("BarbEvolvedGarrisonCheck: Unit selection deemed invalid in this city. Spawn aborted.")
 				end
@@ -282,6 +303,7 @@ function BarbEvolvedCityCapture(vHexPos, oldOwner, cityID, newOwner)
 				sText = "Travellers report that the city of " .. sCityName .. " has fallen into the hands of " .. arrBarbNames[iMinEraId][4] .. "!  With each fallen city, the light of Civilization grows dimmer!"
 			end
 
+			print("BarbEvolvedCityCapture: sending out notification")
 			pActivePlayer:AddNotification(NotificationTypes.NOTIFICATION_GENERIC, sText, sTitle, pCity:GetX(), pCity:GetY())
 		end
 	end
@@ -355,8 +377,12 @@ function BarbEvolvedStateSponsorBuildCheck(iHexX, iHexY, iContinent1, iContinent
 
 	if (sImprovement == "IMPROVEMENT_EVOLVED_CAMP") then
 		if StateSponsoredEncampmentDisabled() then
-			print("BarbEvolvedStateSponsorBuildCheck: Detected finished construction of a disabled State-Sponsored camp; converting it immediately to a fort.")
-			pPlot:SetImprovementType(GameInfoTypes.IMPROVEMENT_FORT)
+			if bBarbEvolveCityStates and pPlot:IsStartingPlot() then
+				print("BarbEvolvedStateSponsorBuildCheck: Sponsored camp at (" .. pPlot:GetX() .. ", " .. pPlot:GetY() .. ") overlooked because it rests on a starting plot.")
+			else
+				print("BarbEvolvedStateSponsorBuildCheck: Detected finished construction of a disabled State-Sponsored camp at (" .. pPlot:GetX() .. ", " .. pPlot:GetY() .. "); converting it immediately to a fort.")
+				pPlot:SetImprovementType(GameInfoTypes.IMPROVEMENT_FORT)
+			end
 		end
 	end
 end
@@ -457,16 +483,7 @@ function BarbEvolvedCityUpdate(player, cityID, updateType)
 					end
 
 					if (pNewCityOwner ~= nil) then
-						-- clear the city plot of all life
-						print("BarbEvolvedCityUpdate: Clearing city plot.")
-						local pCityPlot = pCity:Plot()
-					
-						for plotUnit = 0, pCityPlot:GetNumUnits() - 1, 1 do
-							local pCityPlotUnit = pCityPlot:GetUnit(plotUnit)
-							if pCityPlotUnit ~= nil then
-								pCityPlotUnit:Kill()
-							end
-						end
+						ClearCityPlot(pCity)
 
 						pNewCityOwner:AcquireCity(pCity, true, false)
 					end
@@ -575,12 +592,12 @@ function BarbEvolvedUnitUpgradePass(iBarbCivID)
 					if bCanUpgrade and ((iPlotOwner == -1) or (iPlotOwner == iBarbNPCs)) then
 						-- upgrade the first instance always
 						iUnitUpgCnt = iUnitUpgCnt + 1
-						pNewX = pUnit:GetX()
-						pNewY = pUnit:GetY()
+						iNewX = pUnit:GetX()
+						iNewY = pUnit:GetY()
 						pUnit:Kill()
 						-- create the new
 						-- print("BarbEvolvedUnitUpgradePass: Obsolete unit [" .. GameInfo.Units[iUnitType].Description .. "] - deleting and creating new upgraded version [" .. GameInfo.Units[iUpgradeType].Description .. "].")
-						pPlayer:InitUnit(iUpgradeType, pNewX, pNewY, UNITAI_ATTACK)
+						pPlayer:InitUnit(iUpgradeType, iNewX, iNewY, GameInfo.UnitAIInfos[GameInfo.Units[iUpgradeType].DefaultUnitAI].ID)
 					end
 				end
 			end
@@ -761,7 +778,7 @@ function BarbEvolvedCivStartTurn(iPlayer)
 				print("BarbEvolvedCivStartTurn: Spawning [" .. (halfera + 1) .. "] starting cities for Barbarian MAJOR civ...")
 
 				for i = 0, halfera, 1 do
-					EvolveDistantEncampment(iBarbMajorCiv, nil)
+					Evolve()
 				end
 			end
 			-- did evolution fail (ie. are Barbarians turned off?) if so "evolve" at starting plot
@@ -780,6 +797,7 @@ function BarbEvolvedCivStartTurn(iPlayer)
 					sText = "A " .. arrBarbNames[iMinEraId][2] .. " " .. arrBarbNames[iMinEraId][5] .. " has evolved into a city, adding to the ranks of " .. arrBarbNames[iMinEraId][3] .. "!"
 				end
 
+				print("BarbEvolvedCivStartTurn: sending out notification")
 				pActivePlayer:AddNotification(NotificationTypes.NOTIFICATION_GENERIC, sText, sTitle, thisx, thisy)
 			end
 		end
@@ -840,6 +858,19 @@ function BarbEvolvedCivStartTurn(iPlayer)
 						pUnit:ChangeDamage(-(GameDefines.MAX_HIT_POINTS / 10), iBarbNPCs)
 					end
 				end
+
+				-- Change ownership if unit is in city state lands and Barbarians evolve into City States
+				if (iPlotOwner ~= -1) then
+					if bBarbEvolveCityStates and Players[iPlotOwner]:IsMinorCiv() then
+						-- save and delete the old
+						iNewX = pUnit:GetX()
+						iNewY = pUnit:GetY()
+						iNewType = pUnit:GetUnitType()
+						pUnit:Kill()
+						-- create the new
+						Players[iPlotOwner]:InitUnit(iNewType, iNewX, iNewY, GameInfo.UnitAIInfos[GameInfo.Units[iNewType].DefaultUnitAI].ID)
+					end
+				end
 			end
 		end
 
@@ -876,23 +907,29 @@ function BarbEvolvedCivStartTurn(iPlayer)
 							end
 						end
 					else
-						-- invalid camp, convert
-						print("BarbEvolvedCivStartTurn: Sponsored camp is too close to a city; converting it to a fort.")
-						pPlot:SetImprovementType(GameInfoTypes.IMPROVEMENT_FORT)
+						-- don't convert evolved camps placed on starting plots (for CS evolved) unless the plot is owned
+						if bBarbEvolveCityStates and pPlot:IsStartingPlot() and (pPlot:GetOwner() == -1) then
+							print("BarbEvolvedCivStartTurn: Invalid sponsored camp at (" .. pPlot:GetX() .. ", " .. pPlot:GetY() .. ") overlooked because it rests on an unowned starting plot.")
+						else
+							-- invalid camp, convert
+							print("BarbEvolvedCivStartTurn: Sponsored camp at (" .. pPlot:GetX() .. ", " .. pPlot:GetY() .. ") is too close to a city and/or the plot has an owner; converting it to a fort.")
+							pPlot:SetImprovementType(GameInfoTypes.IMPROVEMENT_FORT)
 
-						-- notify the active player of the conversion if the active player owns the nearby city
-						if (Game.GetActivePlayer() == pPlot:GetWorkingCity():GetOwner()) then
-							local pActivePlayer = Players[Game.GetActivePlayer()]
-							local sTitle = "State-Sponsored " .. sBarbCampDefault .. " shuts down!"
-							local sText = "The encroachment of civilization has caused a State-Sponsored " .. sBarbCampDefault .. " of " .. sBarbShortDefault .. " to shut down!  The fortification is converted and will no longer spawn Barbarians."
+							-- notify the active player of the conversion if the active player owns the nearby city
+							if (Game.GetActivePlayer() == pPlot:GetWorkingCity():GetOwner()) then
+								local pActivePlayer = Players[Game.GetActivePlayer()]
+								local sTitle = "State-Sponsored " .. sBarbCampDefault .. " shuts down!"
+								local sText = "The encroachment of civilization has caused a State-Sponsored " .. sBarbCampDefault .. " of " .. sBarbShortDefault .. " to shut down!  The fortification is converted and will no longer spawn Barbarians."
 
-							-- override if we are using renaming and have reached at least the first period-appropriate array element
-							if bBarbEraNameChange and (iMinEraId > -1) then
-								sTitle = "State-Sponsored " .. arrBarbNames[iMinEraId][5] .. " shuts down!"
-								sText = "The encroachment of civilization has caused a State-Sponsored " .. arrBarbNames[iMinEraId][5] .. " of " .. arrBarbNames[iMinEraId][4] .. " to shut down!  The fortification is converted and will no longer spawn " .. arrBarbNames[iMinEraId][4] .. "!"
+								-- override if we are using renaming and have reached at least the first period-appropriate array element
+								if bBarbEraNameChange and (iMinEraId > -1) then
+									sTitle = "State-Sponsored " .. arrBarbNames[iMinEraId][5] .. " shuts down!"
+									sText = "The encroachment of civilization has caused a State-Sponsored " .. arrBarbNames[iMinEraId][5] .. " of " .. arrBarbNames[iMinEraId][4] .. " to shut down!  The fortification is converted and will no longer spawn " .. arrBarbNames[iMinEraId][4] .. "!"
+								end
+
+								print("BarbEvolvedCivStartTurn: sending out notification")
+								pActivePlayer:AddNotification(NotificationTypes.NOTIFICATION_GENERIC, sText, sTitle, pPlot:GetX(), pPlot:GetY())
 							end
-
-							pActivePlayer:AddNotification(NotificationTypes.NOTIFICATION_GENERIC, sText, sTitle, pPlot:GetX(), pPlot:GetY())
 						end
 					end
 				end
@@ -928,11 +965,7 @@ function BarbEvolvedCivStartTurn(iPlayer)
 		-- If the turn number is evenly divisible by iTurnsPerBarbEvolution, give them a city
 		if (math.fmod(Game.GetElapsedGameTurns(), iTurnsPerBarbEvolution) == 0) and (Game.GetElapsedGameTurns() > 5) and not bDisableBarbEvolution then
 			print("BarbEvolvedCivStartTurn: Time to spawn a free Barbarian city!")
-			if isUsingBarbarianCiv then
-				EvolveDistantEncampment(iBarbMajorCiv, nil)
-			else
-				EvolveDistantEncampment(iPlayer, nil)
-			end
+			Evolve()
 		end
 
 		-- 'water walking' unit rendering fix
@@ -971,8 +1004,244 @@ function FoundCity(owner, x, y)
 		end
 	else
 		print("FoundCity: instantly founding city at [" .. x .. "], [" .. y .. "]")
-		owner:Found(x, y)
+		-- owner:Found(x, y)
+		owner:InitCity(x, y)
 	end
+end
+
+--########################################################################
+-- Evolution
+function Evolve()
+	-- evolve a city state
+	if bBarbEvolveCityStates then
+		if EvolveCityState() then
+			return
+		else
+			print("Evolve: Failed to evolve any City State - evolving Barbarian city.")
+		end
+	end
+
+	-- evolve a Barbarian city
+	if isUsingBarbarianCiv then
+		EvolveDistantEncampment(iBarbMajorCiv, nil)
+	else
+		EvolveDistantEncampment(iPlayer, nil)
+	end
+end
+
+--########################################################################
+-- Clear the city plot of all life
+function ClearCityPlot(pCleanse)
+	print("ClearCityPlot: Clearing city plot.")
+	local pCleansePlot = pCleanse:Plot()
+					
+	for plotUnit = 0, pCleansePlot:GetNumUnits(), 1 do
+		local pCleansePlotUnit = pCleansePlot:GetUnit(plotUnit)
+		if pCleansePlotUnit ~= nil then
+			pCleansePlotUnit:Kill()
+		end
+	end
+end
+
+--########################################################################
+-- Creates a size/territory template based on major civilization capitals
+-- Returns two variables (must be declared prior to call)
+-- iLowestCapSize		- the size of the smallest capital
+-- iLowestCultureLevel	- the cultural tier of the smallest capital
+function GetTemplateCityValues(iForCiv)
+	local iLCS = 1
+	local iLCL = 1
+
+	print("GetTemplateCapValues: Templating for civ ID [" .. iForCiv .. "].")
+
+	-- iterate all majors
+	for i = 0, GameDefines.MAX_MAJOR_CIVS - 1, 1 do
+		-- if we're templating for a Barbarian city consider every capital otherwise skip the Barbarian capital
+		if IsBarbaricCiv(iForCiv) or not IsBarbaricCiv(i) then
+			local pMajorCiv = Players[i]
+			-- does it have a capital city
+			if (pMajorCiv ~= nil) then
+				-- gather stats on weakest capital
+				if (pMajorCiv:GetCapitalCity() ~= nil) then
+					local iThisCapSize = pMajorCiv:GetCapitalCity():GetPopulation()
+					local iThisCultureLevel = pMajorCiv:GetCapitalCity():GetJONSCultureLevel()
+
+					if (iThisCapSize < iLCS) or (iLCS == 1) then
+						iLCS = iThisCapSize
+					end
+					if (iThisCultureLevel < iLCL) or (iLCL == 1) then
+						iLCL = iThisCultureLevel
+					end
+				end
+			end
+		end
+		-- if we're templating for a Barbarian city consider the Tribal Barbarian capital too just in case
+		if IsBarbaricCiv(iForCiv) then
+			local pMajorCiv = Players[iBarbNPCs]
+
+			-- does it have a capital city
+			if (pMajorCiv ~= nil) then
+				-- gather stats on weakest capital
+				if (pMajorCiv:GetCapitalCity() ~= nil) then
+					local iThisCapSize = pMajorCiv:GetCapitalCity():GetPopulation()
+					local iThisCultureLevel = pMajorCiv:GetCapitalCity():GetJONSCultureLevel()
+
+					if (iThisCapSize < iLCS) or (iLCS == 1) then
+						iLCS = iThisCapSize
+					end
+					if (iThisCultureLevel < iLCL) or (iLCL == 1) then
+						iLCL = iThisCultureLevel
+					end
+				end
+			end
+		end
+	end
+
+	-- iterate Tribal Barbarians just in case they have a capital
+
+	print("GetTemplateCapValues: Determined template values --> lowest size [" .. iLCS .."] and lowest culture level [" .. iLCL .. "].")
+	return iLCS, iLCL
+end
+
+--########################################################################
+-- Jumpstart a city by setting its...
+-- 1. Size
+-- 2. Territory
+-- 3. Food (to prevent starvation)
+-- 4. Spawn a worker
+-- 5. Spawn a garrison
+function JumpstartCity(pJumpOwner, pJumpCity)
+
+	if (pJumpOwner == nil) then
+		print("JumpstartCity: pJumpOwner is nil.")
+		return
+	end
+
+	if (pJumpCity == nil) then
+		print("JumpstartCity: pJumpCity is nil.")
+		return
+	end
+
+	local iJumpOwner = pJumpOwner:GetID()
+	local pJumpPlot = pJumpCity:Plot()
+	local jumpx = pJumpPlot:GetX()
+	local jumpy = pJumpPlot:GetY()
+
+	print("JumpstartCity: Jump starting [" .. pJumpCity:GetName() .. "]")
+
+	local iCurrentCultureLevel = pJumpCity:GetJONSCultureLevel()
+	print("JumpstartCity: Current size [" .. pJumpCity:GetPopulation() .. "] and culture level [" .. iCurrentCultureLevel .. "].")
+
+	local iLowestCapSize, iLowestCultureLevel = GetTemplateCityValues(iJumpOwner)
+	print("JumpstartCity: Jumpstarting city to size [" .. iLowestCapSize .."] and culture level [" .. iLowestCultureLevel .. "].")
+
+	-- set size
+	pJumpCity:SetPopulation(iLowestCapSize, true)
+
+	-- buy up land
+	for i = iCurrentCultureLevel, iLowestCultureLevel - 1, 1 do
+		pJumpCity:DoJONSCultureLevelIncrease()
+	end
+
+	-- set food (to stave off instant starvation)
+	print("JumpstartCity: Setting food to GrowthThreshold - 1 ...")
+	pJumpCity:SetFood(pJumpCity:GrowthThreshold() - 1)
+
+	if IsBarbaricCiv(iJumpOwner) then
+		-- barbarians don't get any perks
+		print("JumpstartCity: Skipped worker/defensive unit spawn because city is Barbaric.")
+	else
+		-- spawn a free worker
+		print("JumpstartCity: Attempting to spawn worker...")
+		pJumpOwner:InitUnit(GameInfoTypes.UNIT_WORKER, jumpx, jumpy, UNITAI_WORKER)
+
+		-- spawn free garrison units
+		local iJCTechs = Teams[pJumpOwner:GetTeam()]:GetTeamTechs():GetNumTechsKnown()
+		print("JumpstartCity: Attempting to spawn [" .. iLowestCultureLevel - iCurrentCultureLevel .. "] defensive units, using Barbarian unit selection methodology...")
+		for j = iCurrentCultureLevel, iLowestCultureLevel - 1, 1 do
+			local retID = BarbUnitHeirarchy(pJumpOwner, pJumpPlot, iJCTechs)
+
+			if retID ~= "-1" then
+				pJumpOwner:InitUnit(retID, jumpx, jumpy, GameInfo.UnitAIInfos[GameInfo.Units[retID].DefaultUnitAI].ID)
+			else
+				print("JumpstartCity: A garrison unit of that type can be trained. Spawn aborted.")
+			end
+		end
+	end
+
+	print("JumpstartCity: Jump start complete.")
+end
+
+--########################################################################
+-- Create a city state.
+function EvolveCityState()
+	local bFoundCamp = false
+	local pActivePlayer = Players[Game.GetActivePlayer()]
+
+	-- loop all city states and spawn in sequence
+	for iCityState = GameDefines.MAX_MAJOR_CIVS, GameDefines.MAX_CIV_PLAYERS - 1, 1 do
+		local pCityState = Players[iCityState]
+		local pPlot = pCityState:GetStartingPlot()
+
+		if (pPlot ~= nil) then
+			local thisx = pPlot:GetX()
+			local thisy = pPlot:GetY()
+
+			if not bFoundCamp then
+				if pCityState:IsMinorCiv() and (pCityState:GetNumCities() == 0) then
+					-- check for state-sponsored Encampment on their starting plot
+					-- don't bother trying to evolve on a plot that is owned by any civ
+					print("EvolveCityState: Evaluating (" .. thisx .. "," .. thisy .. "), the starting plot of [" .. pCityState:GetName() .. "]")
+					if (pPlot:GetImprovementType() == GameInfoTypes.IMPROVEMENT_EVOLVED_CAMP) and (pPlot:GetOwner() == -1) and pCityState:CanFound(thisx, thisy) then
+						print("EvolveCityState: Found an encampment on the unowned starting plot of [" .. pCityState:GetName() .. "] - pillaging improvement and evolving here...")
+						bFoundCamp = true
+						-- pillaging should remove it
+						pPlot:SetImprovementPillaged(true)
+						FoundCity(pCityState, thisx, thisy)
+					else
+						print("EvolveCityState: Invalid site - no encampment, plot is owned, or CanFound returned false.  Moving on...")
+					end
+				end
+				-- inherit technologies and perform notification
+				if bFoundCamp then
+					-- print("EvolveCityState: disabling BarbEvolvedCantReachEra event hook.")
+					-- GameEvents.TeamSetHasTech.Remove(BarbEvolvedCantReachEra);
+					print("EvolveCityState: inheriting technologies from Tribal Barbarians.")
+					BarbInheritTech(iCityState)
+					-- print("EvolveCityState: re-enabling BarbEvolvedCantReachEra event hook.")
+					-- GameEvents.TeamSetHasTech.Add(BarbEvolvedCantReachEra);
+
+					-- did we successfully evolve a city?
+					if (pCityState:GetNumCities() > 0) then
+						local pCity = pCityState:GetCapitalCity()
+						ClearCityPlot(pCity)
+						JumpstartCity(pCityState, pCity)
+
+						-- notify
+						local sTitle = "An " .. sBarbCampDefault .. " has evolved!"
+						local sText = "A " .. sBarbAdjDefault .. " " .. sBarbCampDefault .. " has evolved into the city of " .. pCity:GetName() .. "!"
+
+						-- override if we are using renaming and have reached at least the first period-appropriate array element
+						if bBarbEraNameChange and (iMinEraId > -1) then
+							sTitle = "A " .. arrBarbNames[iMinEraId][5] .. " has evolved!"
+							sText = "A " .. arrBarbNames[iMinEraId][2] .. " " .. arrBarbNames[iMinEraId][5] .. " has evolved into the city of " .. pCity:GetName() .. "!"
+						end
+
+						print("EvolveCityState: sending out notification")
+						pActivePlayer:AddNotification(NotificationTypes.NOTIFICATION_GENERIC, sText, sTitle, thisx, thisy)
+
+						print("EvolveCityState exiting true")
+						return true
+					else
+						print("EvolveCityState: bFoundCamp is true but no city was founded.  What just happened?")
+					end
+				end
+			end
+		end
+	end
+
+	print("EvolveCityState exiting false")
+	return false
 end
 
 --########################################################################
@@ -1175,6 +1444,10 @@ function EvolveDistantEncampment(inplayer, inunit)
 			local iCityCountAfter = pRecipient:GetNumCities()
 
 			if (iCityCountBefore ~= iCityCountAfter) then
+				local pCity = Map.GetPlot(thisx, thisy):GetPlotCity()
+				ClearCityPlot(pCity)
+				JumpstartCity(pRecipient, pCity)
+
 				local pActivePlayer = Players[Game.GetActivePlayer()]
 				local sTitle = "An " .. sBarbCampDefault .. " has evolved!"
 				local sText = "A " .. sBarbAdjDefault .. " " .. sBarbCampDefault .. " has evolved into a city, adding to the ranks of " .. pRecipient:GetCivilizationDescription() .. "!"
@@ -1185,6 +1458,7 @@ function EvolveDistantEncampment(inplayer, inunit)
 					sText = "A " .. arrBarbNames[iMinEraId][2] .. " " .. arrBarbNames[iMinEraId][5] .. " has evolved into a city, adding to the ranks of " .. arrBarbNames[iMinEraId][3] .. "!"
 				end
 
+				print("EvolveDistantEncampment: sending out notification")
 				pActivePlayer:AddNotification(NotificationTypes.NOTIFICATION_GENERIC, sText, sTitle, thisx, thisy)
 
 				if (inunit ~= nil) then
@@ -1217,6 +1491,7 @@ function RefreshText()
 		sTitle = arrBarbNames[iLastEraId][4] .. " evolve into " .. arrBarbNames[iMinEraId][4] .. "!"
 		sText = arrBarbNames[iLastEraId][4] .. " have begun calling themselves " .. arrBarbNames[iMinEraId][4] .. " and embrace the cause of " .. arrBarbNames[iMinEraId][3] .. "!"
 
+		print("RefreshText: sending out notification")
 		pActivePlayer:AddNotification(NotificationTypes.NOTIFICATION_GENERIC, sText, sTitle, 0, 0)
 	end
 
@@ -1392,15 +1667,17 @@ function InitBarbMajorCiv()
 
 	-- PEACE LOOP
 	-- only do this if there is a major Barbarian in the game
+	-- if isUsingBarbarianCiv or bBarbEvolveCityStates then
 	if isUsingBarbarianCiv then
 		for playerID = 0, iBarbNPCs - 1 do
 			local player = Players[playerID]
 			if player:IsAlive() then
 				if IsBarbNPCs(playerID) then
 					-- Minors, do nothing
+				-- elseif IsBarbMajorCiv(playerID) or (player:IsMinorCiv() and bBarbEvolveCityStates) then
 				elseif IsBarbMajorCiv(playerID) then
 					if Teams[player:GetTeam()]:IsAlive() then
-						-- Major Barbs, make peace with minors
+						-- Major Barbs or City State under "Barbs evolve into City States" rules, make peace with tribal
 						if Teams[player:GetTeam()]:IsAtWar(Players[iBarbNPCs]:GetTeam()) then
 							print("Setting PEACE between teams [" .. player:GetTeam() .. "] and [" .. Players[iBarbNPCs]:GetTeam() .. "].")
 							Teams[player:GetTeam()]:MakePeace(Players[iBarbNPCs]:GetTeam())
@@ -1449,6 +1726,8 @@ function AssertBarbarianStateOfWar()
 					-- Minors, do nothing
 				elseif IsBarbMajorCiv(playerID) then
 					-- Major Barbs, done in prevous loop
+				-- elseif player:IsMinorCiv() and bBarbEvolveCityStates then
+					-- City State under "Barbs evolve into City States" rules, do nothing
 				else
 					if Teams[player:GetTeam()]:IsAlive() then
 						-- Have they met the Major Barbs?
@@ -1461,6 +1740,32 @@ function AssertBarbarianStateOfWar()
 							Teams[Players[iBarbMajorCiv]:GetTeam()]:SetPermanentWarPeace(player:GetTeam(), true)
 						end
 					end
+				end
+			end
+		end
+	end
+end
+
+--########################################################################
+-- Initialize City States if option checked
+function BarbEvolvedCityStates()
+	-- NEW: Barbarians can evolve into City States
+	if bBarbEvolveCityStates then
+		print("BarbEvolvedCityStates: Barbarians are evolving into City States...")
+		if (Game.GetElapsedGameTurns() == 0) then
+			print("BarbEvolvedCityStates: Turn 0 setup.")
+			-- turn 0; delete all city state settlers and replace with state-sponsored encampments
+			for iCityState = 0, GameDefines.MAX_CIV_PLAYERS - 1, 1 do
+				pCityState = Players[iCityState]
+				if pCityState:IsMinorCiv() and pCityState:IsAlive() then
+					-- kill them off by killing off all units
+					print("BarbEvolvedCityStates: Killing off City State [" .. pCityState:GetName() .. "] and placing a State-Sponsored Encampment on their starting plot.")
+					for pUnit in pCityState:Units() do
+						pUnit:Kill()
+					end
+					-- place state-sponsored Encampment on their starting plot
+					pPlot = pCityState:GetStartingPlot()
+					pPlot:SetImprovementType(GameInfoTypes.IMPROVEMENT_EVOLVED_CAMP)
 				end
 			end
 		end
@@ -1510,6 +1815,12 @@ end
 -- Ban Barbarians from training workers, settlers and caravans/cargo ships (BNW only)
 function BarbEvolvedCantTrainSpecificUnits(player, unitType)
 	-- print("BarbEvolvedCantTrainSpecificUnits called")
+
+	-- nobody can build the immobile settlers
+	if (unitType == GameInfoTypes.UNIT_IMMOBILE_SETTLER) then
+		-- print("BarbEvolvedCantTrainSpecificUnits ending false")
+		return false
+	end
 
 	if IsBarbNPCs(player) and (unitType == GameInfoTypes.UNIT_WORKER) then
 		-- print("BarbEvolvedCantTrainSpecificUnits ending false")
@@ -1594,6 +1905,7 @@ function BarbInheritSpecificTech(playerid, t)
 			if (Game.GetActivePlayer() == playerid) then
 				local sTitle = "Technology inherited: " .. Locale.Lookup(GameInfo.Technologies[t].Description)
 				local sText = "Your allies have learned " .. Locale.Lookup(GameInfo.Technologies[t].Description) .. " through hostile encounters with civilization, and have passed that learning to you!"
+				print("BarbInheritSpecifictech: sending out notification")
 				pDest:AddNotification(NotificationTypes.NOTIFICATION_GENERIC, sText, sTitle)
 			end
 		end
@@ -2098,15 +2410,17 @@ else
 	PreGame.SetLeaderType(iBarbNPCs, GameInfo.Leaders["LEADER_BARBARIAN_EVOLVED"].ID)
 end
 
-print("Assigning Barbarian colors...")
 if isUsingBarbarianCiv and IsDefaultBarbMajorCiv() then
+	print("Assigning Major Barbarian color [" .. sMajorPlayerColor .. "] to [" .. iBarbMajorCiv .. "]")
 	PreGame.SetPlayerColor(iBarbMajorCiv, GameInfo.PlayerColors[sMajorPlayerColor].ID);
 end
+print("Assigning Tribal Barbarian color [" .. sMinorPlayerColor .. "] to [" .. iBarbNPCs .. "]")
 PreGame.SetPlayerColor(iBarbNPCs, GameInfo.PlayerColors[sMinorPlayerColor].ID);
 
 print("Hooking functions...")
 
 Events.LoadScreenClose.Add(InitBarbMajorCiv);
+Events.LoadScreenClose.Add(BarbEvolvedCityStates);
 Events.SequenceGameInitComplete.Add(BarbEvolvedNPCUnitUpgradePass);
 Events.SequenceGameInitComplete.Add(BarbEvolvedTechWindback);
 Events.SequenceGameInitComplete.Add(BarbEvolvedNPCPolicyWindback);

@@ -2,6 +2,27 @@
 <!-- Created by ModBuddy on 07/18/2015 7:38:30 PM -->
 <GameData>
 	<Language_en_US>
+		<!-- Pre-setup button labels -->
+		<Update>
+			<Where Tag="TXT_KEY_MODDING_MAPS"/>
+			<Set>
+				<Text>USE MAP SCENARIO</Text>				
+			</Set>	
+		</Update>
+		<Update>
+			<Where Tag="TXT_KEY_MODDING_CUSTOMGAME"/>
+			<Set>
+				<Text>NEW CUSTOM GAME</Text>
+			</Set>
+		</Update>
+		<!--
+		<Update>
+			<Where Tag="TXT_KEY_MODDING_LOADGAME"/>
+			<Set>
+				<Text>LOAD GAME</Text>
+			</Set>
+		</Update>
+		-->
 		<!-- Setup screen titles and tab labels -->
 		<Row Tag="TXT_KEY_BARBARIANS_EVOLVED_NOBODY">
 			<Text>No Civilization</Text>
@@ -38,13 +59,19 @@
 			<Text>Barbarians Evolved</Text>
 		</Row>
 		<Row Tag="TXT_KEY_BE_PRESET_VANILLA_DETAIL">
-			<Text>This common preset is intended for the standard Barbarians Evolved experience.  Barbarians will evolve and capture cities, and present a serious threat to your Civilization.  You can play as them or play against them.</Text>
+			<Text>This common preset is intended for the standard Barbarians Evolved experience.  Barbarians will evolve and capture cities, and present a serious threat to your Civilization.  You can fight off the fall of Civilization, or play as the Barbarians and bring it to pass!</Text>
+		</Row>
+		<Row Tag="TXT_KEY_BE_PRESET_CITYSTATES">
+			<Text>Barbarians Evolve Into City States</Text>
+		</Row>
+		<Row Tag="TXT_KEY_BE_PRESET_CITYSTATES_DETAIL">
+			<Text>This preset is a twist on the Barbarians Evolved experience.  Given time, Barbarian Encampments will evolve into City States - if you let them.  City States assimilate Barbarians that invade their territory.  You cannot play as Barbarians nor have the Barbarian Civilization in your game.</Text>
 		</Row>
 		<Row Tag="TXT_KEY_BE_PRESET_DLL">
 			<Text>Custom DLL</Text>
 		</Row>
 		<Row Tag="TXT_KEY_BE_PRESET_DLL_DETAIL">
-			<Text>This preset is intended for experienced mod-users that are using a DLL mod, such as the Community Balance Patch.  Certain actions are changed to use safer methods, and Barbarian city capture, healing and upgrade are all assumed provided by the enhanced DLL.</Text>
+			<Text>This preset is intended for experienced mod-users that are using a DLL mod, such as the Community Balance Patch or Vox Populi.  Barbarian city capture, healing and upgrade are all assumed provided by the enhanced DLL.</Text>
 		</Row>
 		<Row Tag="TXT_KEY_PRESET_MINIMAL">
 			<Text>Minimal Disruption</Text>
@@ -105,7 +132,7 @@
 			<Text>Allow Camp Evolution</Text>
 		</Row>
 		<Row Tag="TXT_KEY_BESETTING_LABEL_EVOLVE_TIP">
-			<Text>Defines whether Barbarian Encampments evolve into cities.</Text>
+			<Text>Defines whether Barbarian Encampments evolve into cities.  If you selected the City States preset, they will evolve into City States first, and Barbarian cities once no more City States can evolve.</Text>
 		</Row>
 		<Row Tag="TXT_KEY_BESETTING_LABEL_EVOLUTION_TIMER">
 			<Text>Evolution Timer: {1_Num} turns</Text>
@@ -117,7 +144,7 @@
 			<Text>Evolve Settlers</Text>
 		</Row>
 		<Row Tag="TXT_KEY_BESETTING_LABEL_EVOLUTION_SETTLERS_TIP">
-			<Text>Some mods crash when Barbarian cities are spawned.  This option causes the Evolution action to spawn a Settler unit, which resolves the crash.</Text>
+			<Text>Some mods crash when cities are spawned from nothing.  This option causes the Evolution action to spawn a Settler unit instead, which resolves the crash.  Depending on your mod setup, the Settler may wander or settle in-place.</Text>
 		</Row>
 		<Row Tag="TXT_KEY_BESETTING_LABEL_CAPTURE">
 			<Text>Allow City Capture</Text>
@@ -147,13 +174,13 @@
 			<Text>Liberate Target</Text>
 		</Row>
 		<Row Tag="TXT_KEY_BESETTING_LABEL_LIBERATE_TIP">
-			<Text>If valid, defines the Civilization to which Barbarian cities may be liberated.</Text>
+			<Text>If valid, defines the Civilization to which Barbarian cities may be liberated.[NEWLINE]A common complaint with Barbarians Evolved was that capturing Barbarian cities incurred a Warmonger penalty.  This allows you to pre-define a 'victim' Civilization to which cities will be spawned then 'captured' by the Barbarian civilization, allowing for Barbarian cities to be Liberated.</Text>
 		</Row>
 		<Row Tag="TXT_KEY_BESETTING_LABEL_DISPERSE">
 			<Text>Disperse Liberated Barbarian Cities</Text>
 		</Row>
 		<Row Tag="TXT_KEY_BESETTING_LABEL_DISPERSE_TIP">
-			<Text>Defines whether liberated Barbarian cities are dispersed on the next turn.[NEWLINE][COLOR_NEGATIVE_TEXT]WARNING:[ENDCOLOR] This means whoever the liberation target is, they can never hold a city longer than one turn before it is erased from existence.</Text>
+			<Text>Defines whether liberated Barbarian cities (owned by the Liberation Civilization) are dispersed on the next turn.[NEWLINE][COLOR_NEGATIVE_TEXT]WARNING:[ENDCOLOR] This means whoever the liberation target is, they can never hold a city longer than one turn before it is erased from existence.</Text>
 		</Row>
 		<Row Tag="TXT_KEY_BESETTING_LABEL_ALLY">
 			<Text>Barbarian Civ ID</Text>

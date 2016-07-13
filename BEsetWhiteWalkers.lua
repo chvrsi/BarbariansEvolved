@@ -29,6 +29,8 @@ bDisableBarbEvolution = false
 
 bBarbEvolveSettlers = false
 
+bBarbEvolveCityStates = false
+
 bDisableBarbCapture = false
 
 bRequireMeleeCapture = false

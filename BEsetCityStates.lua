@@ -3,7 +3,7 @@
 -- DateCreated: 01/28/2016 10:45:45 PM
 --------------------------------------------------------------
 
-print("Loading settings from file BEsetVanilla...")
+print("Loading settings from file BEsetCityStates...")
 
 -- End-User Customizable Settings
 
@@ -29,7 +29,7 @@ bDisableBarbEvolution = false
 
 bBarbEvolveSettlers = false
 
-bBarbEvolveCityStates = false
+bBarbEvolveCityStates = true
 
 bDisableBarbCapture = false
 
@@ -39,11 +39,11 @@ bDisableGlobalUpgrade = false
 
 bDisableGlobalUpgradeForMe = true
 
-sBarbLiberateTo = "CIVILIZATION_BARBARIAN"
+sBarbLiberateTo = "CIVILIZATION_INTENTIONALLY_INVALID"
 
 bBarbDisperseOnLiberate = true
 
-sBarbMajorAlly = "CIVILIZATION_BARBARIAN_MAJOR"
+sBarbMajorAlly = "CIVILIZATION_INTENTIONALLY_INVALID"
 
 arrBarbLandUnitPromotions = {"PROMOTION_EVOLVED_FORCES"}
 
@@ -53,7 +53,7 @@ arrBarbAirUnitPromotions = {}
 
 bBarbEraNameChange = true
 
-bDeferNameChange = false
+bDeferNameChange = true
 
 sBarbAdjDefault = "Barbarian"
 
@@ -89,9 +89,9 @@ table.insert(arrBarbNames, arrEra)
 arrEra = {"ERA_FUTURE", "Terrorist", "Anarchy", "Terrorists", "Training Camp"}
 table.insert(arrBarbNames, arrEra)
 
-bDisableBuildingEncampmentsForAll = false
+bDisableBuildingEncampmentsForAll = true
 
-bDisableBuildingEncampmentsForOthers = false
+bDisableBuildingEncampmentsForOthers = true
 
 sLanguageTable = "language_" .. Locale.GetCurrentLanguage().Type
 

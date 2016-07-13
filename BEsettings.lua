@@ -5,11 +5,12 @@
 
 -- Change this to one of four strings (NO EXTENSION!):
 --
--- BEsetVanilla		- the standard experience
--- BEsetMinimal		- the most minimal impact (mostly behavioral changes)							- THE NEW DEFAULT AS OF V4
--- BEsetCBP			- for use with the Community Balance Patch
+-- BEsetVanilla			- the standard experience															DEFAULT in v5
+-- BEsetMinimal			- the most minimal impact (mostly behavioral changes)
+-- BEsetCBP				- for use with the Community Balance Patch / Vox Populi
 -- BEsetWhiteWalkers	- if you want the functional equivalent of the White Walkers
--- BEsetPersonalized	- try your own changes here
+-- BEsetCityStates		- if you want vanilla Barbarians evolving into City States							NEW in v5
+-- BEsetPersonalized	- for a full explanation of the settings, and you can try your own changes here
 --
 -- Look in BEsettings_Personalized.lua for a description of what everything does.
-include("BEsetMinimal")
+include("BEsetVanilla")

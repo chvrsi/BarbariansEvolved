@@ -3,6 +3,29 @@
 <GameData>
 	<Units>
 		<Row>
+			<Class>UNITCLASS_SETTLER</Class>
+			<Type>UNIT_IMMOBILE_SETTLER</Type>
+			<Combat>6</Combat>
+			<Moves>2</Moves>
+			<Immobile>true</Immobile>
+			<Capture>UNITCLASS_WORKER</Capture>
+			<CivilianAttackPriority>CIVILIAN_ATTACK_PRIORITY_LOW</CivilianAttackPriority>
+			<HurryCostModifier>20</HurryCostModifier>
+			<Domain>DOMAIN_LAND</Domain>
+			<DefaultUnitAI>UNITAI_SETTLE</DefaultUnitAI>
+			<Description>TXT_KEY_UNIT_SETTLER</Description>
+			<Civilopedia>TXT_KEY_CIV5_ANTIQUITY_SETTLER_TEXT</Civilopedia>
+			<Strategy>TXT_KEY_UNIT_SETTLER_STRATEGY</Strategy>
+			<Help>TXT_KEY_UNIT_HELP_SETTLER</Help>
+			<Food>true</Food>
+			<Found>true</Found>
+			<CombatLimit>0</CombatLimit>
+			<UnitArtInfo>ART_DEF_UNIT__SETTLER</UnitArtInfo>
+			<UnitArtInfoCulturalVariation>true</UnitArtInfoCulturalVariation>
+			<PortraitIndex>0</PortraitIndex>
+			<IconAtlas>UNIT_ATLAS_1</IconAtlas>
+		</Row>
+		<Row>
 			<Class>UNITCLASS_WORKER</Class>
 			<Type>UNIT_BARBARIAN_WORKER</Type>
 			<Cost>50</Cost>

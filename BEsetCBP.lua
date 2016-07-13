@@ -25,12 +25,14 @@ bDisableBarbSpawnForMe = true
 
 bDisableSponsoredSpawns = false
 
-iSpawnChance = PreGame.GetHandicap()
+iSpawnChance = 4
 
 bDisableBarbEvolution = false
 
 -- CBP does not like the player:Found() method
-bBarbEvolveSettlers = true
+bBarbEvolveSettlers = false
+
+bBarbEvolveCityStates = false
 
 -- CBP changes allow Barbarians to capture cities properly, so disable
 bDisableBarbCapture = true

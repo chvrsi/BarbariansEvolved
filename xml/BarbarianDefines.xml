@@ -26,6 +26,7 @@
 		AI_TACTICAL_BARBARIAN_PRIORITY_PLUNDER_TRADE_UNIT	20
 		AI_TACTICAL_BARBARIAN_PRIORITY_TO_SAFETY			10
 		-->
+		<!-- Increase tendency to attack cities (was 5 to damage, 9 to capture) -->
 		<Update>
 			<Where Name="AI_TACTICAL_BARBARIAN_PRIORITY_DAMAGE_CITY"/>
 			<Set Value="12"/>
@@ -33,6 +34,15 @@
 		<Update>
 			<Where Name="AI_TACTICAL_BARBARIAN_PRIORITY_CAPTURE_CITY"/>
 			<Set Value="11"/>
+		</Update>
+		<!-- Increase density from a single camp (was 2 barbs within 4 tiles of camp) -->
+		<Update>
+			<Where Name="MAX_BARBARIANS_FROM_CAMP_NEARBY"/>
+			<Set Value="6"/>
+		</Update>
+		<Update>
+			<Where Name="MAX_BARBARIANS_FROM_CAMP_NEARBY_RANGE"/>
+			<Set Value="2"/>
 		</Update>
 		<!-- Reduce AI variation? (was 15) -->
 		<Update>

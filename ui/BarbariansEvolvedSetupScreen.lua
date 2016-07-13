@@ -23,9 +23,10 @@ bDisableBarbSpawn = false
 bDisableBarbSpawnForAlly = false
 bDisableBarbSpawnForMe = true
 bDisableSponsoredSpawns = false
-iSpawnChance = PreGame.GetHandicap()
+iSpawnChance = 4
 bDisableBarbEvolution = false
 bBarbEvolveSettlers = false
+bBarbEvolveCityStates = false
 bDisableBarbCapture = false
 bRequireMeleeCapture = false
 bDisableGlobalUpgrade = false
@@ -163,17 +164,20 @@ ContextPtr:SetInputHandler( InputHandler );
 -------------------------------------------------
 -- Preset Icon Offsets
 -------------------------------------------------
--- BE == nrute
-IconHookup( 25, 128, "UNIT_ATLAS_1", Controls.PortraitVanilla );
+-- BE == brute
+IconHookup( 25, 64, "UNIT_ATLAS_1", Controls.PortraitVanilla );
+
+-- CityStates = scout
+IconHookup( 5, 64, "UNIT_ATLAS_1", Controls.PortraitCityStates );
 
 -- DLL == worker
-IconHookup( 1, 128, "UNIT_ATLAS_1", Controls.PortraitDLL );
+IconHookup( 1, 64, "UNIT_ATLAS_1", Controls.PortraitDLL );
 
 -- Minimal == settler
-IconHookup( 0, 128, "UNIT_ATLAS_1", Controls.PortraitMinimal );
+IconHookup( 0, 64, "UNIT_ATLAS_1", Controls.PortraitMinimal );
 
 -- Nightmare == atomic bomb
-IconHookup( 24, 128, "UNIT_ATLAS_2", Controls.PortraitNightmare );
+IconHookup( 24, 64, "UNIT_ATLAS_2", Controls.PortraitNightmare );
 
 -- Generic stuff that happens when you pick a preset
 function PresetPicked()
@@ -187,6 +191,10 @@ function PresetPicked()
 	Controls.BEStringButton:SetHide(false)
 	-- Controls.BasicButton:SetHide(false)
 	Controls.AdvancedButton:SetHide(false)
+	-- enable anything that happened to be disabled
+	Controls.AllyCivPulldown:SetDisabled(false);
+	Controls.AllyOption:SetDisabled(false);
+	Controls.AllyMeOption:SetDisabled(false);
 	-- move to the 2nd panel
 	OnCategory(2)
 end
@@ -296,10 +304,33 @@ function PresetVanilla()
 	-- newer params
 	bBarbMajorAllyExists = true
 	bBarbMajorAllyAsMe = false
+	bBarbEvolveCityStates = false
 
 	ApplyPreset();
 end
 Controls.PresetVanilla:RegisterCallback( Mouse.eLClick, PresetVanilla );
+
+-- City State presets
+function PresetCityStates()
+	print("City State preset selected...");
+	PresetPicked();
+
+	-- formerly BEsetVanilla.lua
+	include("BEsetCityStates")
+
+	-- disabled controls
+	Controls.AllyCivPulldown:SetDisabled(true);
+	Controls.AllyOption:SetDisabled(true);
+	Controls.AllyMeOption:SetDisabled(true);
+
+	-- newer params
+	bBarbMajorAllyExists = false
+	bBarbMajorAllyAsMe = false
+	bBarbEvolveCityStates = true
+
+	ApplyPreset();
+end
+Controls.PresetCityStates:RegisterCallback( Mouse.eLClick, PresetCityStates );
 
 -- DLL presets
 function PresetDLL()
@@ -312,6 +343,7 @@ function PresetDLL()
 	-- newer params
 	bBarbMajorAllyExists = true
 	bBarbMajorAllyAsMe = false
+	bBarbEvolveCityStates = false
 
 	ApplyPreset();
 end
@@ -328,6 +360,7 @@ function PresetMinimal()
 	-- newer params
 	bBarbMajorAllyExists = false
 	bBarbMajorAllyAsMe = false
+	bBarbEvolveCityStates = false
 
 	ApplyPreset();
 end
@@ -344,6 +377,7 @@ function PresetNightmare()
 	-- newer params
 	bBarbMajorAllyExists = false
 	bBarbMajorAllyAsMe = false
+	bBarbEvolveCityStates = false
 
 	ApplyPreset();
 end
@@ -501,6 +535,27 @@ AllyPulldown:RegisterSelectionCallback( AllyCivCallback );
 PopulateCivPulldown(playableCivs, AllyPulldown);
 
 -------------------------------------------------------------------------------------------------- STRINGS --------------------------------------------------------------------------------------------------
+-- reorder strings array
+function ReorderBarbNamesArray()
+	arrReorder = {}
+
+	print("ReorderBarbNamesArray: commencing rebuild...")
+
+	for era in GameInfo.Eras() do
+		for _, row in pairs(arrBarbNames) do
+			if row[1] == era.Type then
+				print("[" .. row[1] .. "], [" .. row[2] .. "], [" .. row[3] .. "], [" .. row[4] .. "], [" .. row[5] .. "]")
+				table.insert(arrReorder, row)
+			end
+		end
+	end
+
+	arrBarbNames = {}
+	arrBarbNames = arrReorder
+
+	print("ReorderBarbNamesArray: rebuild complete.")
+end
+
 -- rebuild strings array
 function RebuildBarbNames(inrow, incol, val)
 	-- print("Updating [" .. inrow .. "]-[" .. incol .. "] to [" .. val .. "]");
@@ -516,6 +571,7 @@ end
 function SetEraNames()
 	local BEStringDefaults = Controls.BEDefaultEraStrings;
 	local BEStringRows = Controls.BEStringRows;
+	local BEStringScroll = Controls.BEStringScroll;
 
 	-- import default strings
 	Controls.EraDefault:SetText("All");
@@ -533,9 +589,11 @@ function SetEraNames()
 		ContextPtr:BuildInstanceForControl( "BEStringsInstance", instance, BEStringRows );
 		instance.EraVal:LocalizeAndSetText(era.Description)
 		instance.EraVal:SetDisabled(true)
-		-- instance.EraVal:RegisterCallback(Mouse.eLClick, something)
+		-- find the Era in presets
+		bFoundEra = false
 		for _, row in pairs(arrBarbNames) do
 			if row[1] == era.Type then
+				bFoundEra = true
 				instance.AdjVal:LocalizeAndSetText(row[2])
 				instance.AdjVal:RegisterCallback(function (val,obj,bfire) RebuildBarbNames(row[1], 2, val) end)
 				instance.DescrVal:LocalizeAndSetText(row[3])
@@ -546,9 +604,21 @@ function SetEraNames()
 				instance.CampVal:RegisterCallback(function (val,obj,bfire) RebuildBarbNames(row[1], 5, val) end)
 			end
 		end
+		if not bFoundEra then
+			-- another mod has added a new Era not found in the defaults; add it to the array and register callbacks
+			print("SetEraNames: New era discovered [" .. era.Type .. "], adding to Names array...")
+			newEra = {era.Type, "", "", "", ""}
+			table.insert(arrBarbNames, newEra)
+			ReorderBarbNamesArray()
+			instance.AdjVal:RegisterCallback(function (val,obj,bfire) RebuildBarbNames(era.Type, 2, val) end)
+			instance.DescrVal:RegisterCallback(function (val,obj,bfire) RebuildBarbNames(era.Type, 3, val) end)
+			instance.ShortVal:RegisterCallback(function (val,obj,bfire) RebuildBarbNames(era.Type, 4, val) end)
+			instance.CampVal:RegisterCallback(function (val,obj,bfire) RebuildBarbNames(era.Type, 5, val) end)
+		end
 	end
 	BEStringRows:CalculateSize()
 	BEStringRows:ReprocessAnchoring()
+	BEStringScroll:CalculateInternalSize()
 
 	ShowHideEraNames()
 end
@@ -564,7 +634,7 @@ function ShowHideEraNames()
 end
 
 -- default
-SetEraNames();
+-- SetEraNames();
 
 -- colors
 function SetDemoIconColors()
@@ -635,7 +705,7 @@ end
 MajorColorPullDown:RegisterSelectionCallback( MajorColorCallback );
 
 -- default
-SetDemoIconColors();
+-- SetDemoIconColors();
 
 -------------------------------------------------------------------------------------------------- SAVE/LOAD --------------------------------------------------------------------------------------------------
 
@@ -651,6 +721,13 @@ function CommitSettings()
 	print("Setting Raging Barbarians option...")
 	PreGame.SetGameOption("GAMEOPTION_RAGING_BARBARIANS", bRagingBarbarians)
 
+	print("Checking if Barbarians evolve into City States...")
+	if bBarbEvolveCityStates then
+		-- print("Disabling Tribal Barbarians.")
+		print("State-Sponsored Encampments will be placed at City State starting plots.")
+		-- PreGame.SetGameOption("GAMEOPTION_NO_BARBARIANS", true)
+	end
+
 	local oAlly = GameInfo.Civilizations[sBarbMajorAlly]
 
 	print("Checking if Barbarian ally is valid...")
@@ -660,11 +737,11 @@ function CommitSettings()
 			if bBarbMajorAllyAsMe then
 				print("Placed the Barbarian ally in slot 0.")
 				PreGame.SetCivilization(0, GameInfo.Civilizations[sBarbMajorAlly].ID);
-				PreGame.SetPlayerColor(0, GameInfo.PlayerColors[sMajorPlayerColor].ID);
+				-- PreGame.SetPlayerColor(0, GameInfo.PlayerColors[sMajorPlayerColor].ID);
 			else
 				print("Placed the Barbarian ally in slot 1.")
 				PreGame.SetCivilization(1, GameInfo.Civilizations[sBarbMajorAlly].ID);
-				PreGame.SetPlayerColor(1, GameInfo.PlayerColors[sMajorPlayerColor].ID);
+				-- PreGame.SetPlayerColor(1, GameInfo.PlayerColors[sMajorPlayerColor].ID);
 			end
 		end
 	else
@@ -677,5 +754,5 @@ function CommitSettings()
 	end
 
 	-- apply spawn chance to game difficulty
-	PreGame.SetHandicap(0, iSpawnChance);
+	-- PreGame.SetHandicap(0, iSpawnChance);
 end

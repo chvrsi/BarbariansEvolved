@@ -53,6 +53,7 @@ function BEWriteData(beData)
 	beData.SetValue("iSpawnChance", iSpawnChance)
 	beData.SetValue("bDisableBarbEvolution", bDisableBarbEvolution)
 	beData.SetValue("bBarbEvolveSettlers", bBarbEvolveSettlers)
+	beData.SetValue("bBarbEvolveCityStates", bBarbEvolveCityStates)
 	beData.SetValue("bDisableBarbCapture", bDisableBarbCapture)
 	beData.SetValue("bRequireMeleeCapture", bRequireMeleeCapture)
 	beData.SetValue("bDisableGlobalUpgrade", bDisableGlobalUpgrade)
@@ -73,8 +74,11 @@ function BEWriteData(beData)
 	-- create a temporary superstring for arrBarbNames... and hope there isn't a character limit on this!
 	ssBarbNames = ""
 	for _, row in pairs(arrBarbNames) do
-		local newstr = table.concat(row, ",")
-		ssBarbNames = ssBarbNames .. "|" .. newstr
+		-- 06/27 don't concatenate (save) nullstring name rows
+		if (row[2] ~= "") and (row[3] ~= "") and (row[4] ~= "") and (row[5] ~= "") then
+			local newstr = table.concat(row, ",")
+			ssBarbNames = ssBarbNames .. "|" .. newstr
+		end
 	end
 	beData.SetValue("bDisableBuildingEncampmentsForAll", bDisableBuildingEncampmentsForAll)
 	beData.SetValue("bDisableBuildingEncampmentsForOthers", bDisableBuildingEncampmentsForOthers)
@@ -128,6 +132,7 @@ function BEReadData(beData)
 	iSpawnChance = BEReportRead(beData, "iSpawnChance")
 	bDisableBarbEvolution = BEReportRead(beData, "bDisableBarbEvolution")
 	bBarbEvolveSettlers = BEReportRead(beData, "bBarbEvolveSettlers")
+	bBarbEvolveCityStates = BEReportRead(beData, "bBarbEvolveCityStates")
 	bDisableBarbCapture = BEReportRead(beData, "bDisableBarbCapture")
 	bRequireMeleeCapture = BEReportRead(beData, "bRequireMeleeCapture")
 	bDisableGlobalUpgrade = BEReportRead(beData, "bDisableGlobalUpgrade")

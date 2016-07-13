@@ -64,7 +64,7 @@ bDisableSponsoredSpawns = false
 
 -- Spawn chance (1-10, each number = 10%).  Doubled if bRagingBarbarians is true.  Doubled again if city has taken damage.
 -- Default = Game Difficulty (Settler = 0, and so on to Deity = 7).
-iSpawnChance = PreGame.GetHandicap()
+iSpawnChance = 4
 
 -- DO BARBARIANS SPAWN CITIES?
 --
@@ -75,6 +75,10 @@ bDisableBarbEvolution = false
 -- Barbarians either evolve cities instantly on a tile, or pop settlers on the tile with orders to found a city.
 -- If this option is TRUE, Barbarians will pop settlers.  False means they pop cities instantly.  Some mods crash if cities are popped instantly.
 bBarbEvolveSettlers = false
+
+-- Barbarians can now (as of v5) evolve into City States.  Should they do this?
+-- If you set this to true, you should probably disable city capture, make the ally invalid and do not play as Barbarians.
+bBarbEvolveCityStates = false
 
 -- DO BARBARIANS CAPTURE CITIES?
 --
