@@ -12,7 +12,6 @@
 			<ArtDefineTag>COURTHOUSE</ArtDefineTag>
 			<Cost>-1</Cost>
 			<PrereqTech>NULL</PrereqTech>
-			<FaithCost>-1</FaithCost>
 			<MinAreaSize>-1</MinAreaSize>
 			<NeverCapture>true</NeverCapture>
 			<NukeImmune>true</NukeImmune>

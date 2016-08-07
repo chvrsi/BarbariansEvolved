@@ -7,9 +7,11 @@
 			<Type>UNIT_IMMOBILE_SETTLER</Type>
 			<Combat>6</Combat>
 			<Moves>2</Moves>
-			<Immobile>true</Immobile>
+<!--
 			<Capture>UNITCLASS_WORKER</Capture>
 			<CivilianAttackPriority>CIVILIAN_ATTACK_PRIORITY_LOW</CivilianAttackPriority>
+-->
+			<Immobile>true</Immobile>
 			<HurryCostModifier>20</HurryCostModifier>
 			<Domain>DOMAIN_LAND</Domain>
 			<DefaultUnitAI>UNITAI_SETTLE</DefaultUnitAI>

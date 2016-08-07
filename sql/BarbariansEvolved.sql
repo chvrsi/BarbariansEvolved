@@ -48,13 +48,17 @@ INSERT INTO Diplomacy_Responses (LeaderType, ResponseType, Response, Bias) VALUE
 
 -- GNK & BNW CHANGES (placed at end to prevent an early script death)
 
--- remove any belief that converts Barbarians (i.e. Heathen Conversion)
-DELETE FROM Beliefs WHERE ConvertsBarbarians = 1;
-
 -- create tables if they don't exist (stops crash if GNK/BNW)
+CREATE TABLE IF NOT EXISTS Trait_NoTrain('TraitType' text , 'UnitClassType' text);
+
+CREATE TABLE IF NOT EXISTS Beliefs ('Type' text , 'ConvertsBarbarians' text);
+
 CREATE TABLE IF NOT EXISTS Civilization_Religions ('CivilizationType' text , 'ReligionType' text , foreign key (CivilizationType) references Civilizations(Type), foreign key (ReligionType) references Religions(Type));
 
 CREATE TABLE IF NOT EXISTS Civilization_SpyNames ('CivilizationType' text , 'SpyName' text  not null , foreign key (CivilizationType) references Civilizations(Type), foreign key (SpyName) references Language_en_US(Tag));
+
+-- remove any belief that converts Barbarians (i.e. Heathen Conversion)
+DELETE FROM Beliefs WHERE ConvertsBarbarians = 1;
 
 -- clone religion for Barbarian State
 INSERT INTO Civilization_Religions (CivilizationType, ReligionType) SELECT 'CIVILIZATION_BARBARIAN', ReligionType FROM Civilization_Religions WHERE CivilizationType = 'CIVILIZATION_ENGLAND';

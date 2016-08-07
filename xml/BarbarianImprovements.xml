@@ -6,7 +6,9 @@
 			<Where Type="IMPROVEMENT_BARBARIAN_CAMP"/>
 			<Set>
 				<DefenseModifier>50</DefenseModifier>
+<!--
 				<IgnoreOwnership>true</IgnoreOwnership>
+-->
 			</Set>
 		</Update>
 		<Row>
@@ -23,7 +25,9 @@
 			<BuildableOnResources>true</BuildableOnResources>
 			<DefenseModifier>50</DefenseModifier>
 			<OutsideBorders>true</OutsideBorders>
+<!--
 			<IgnoreOwnership>true</IgnoreOwnership>
+-->
 			<GoldMaintenance>1</GoldMaintenance>
 			<PortraitIndex>21</PortraitIndex>
 			<IconAtlas>TERRAIN_ATLAS</IconAtlas>

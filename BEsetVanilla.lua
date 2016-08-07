@@ -45,7 +45,7 @@ bBarbDisperseOnLiberate = true
 
 sBarbMajorAlly = "CIVILIZATION_BARBARIAN_MAJOR"
 
-arrBarbLandUnitPromotions = {"PROMOTION_EVOLVED_FORCES"}
+arrBarbLandUnitPromotions = {}
 
 arrBarbSeaUnitPromotions = {}
 
