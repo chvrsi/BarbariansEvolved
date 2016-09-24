@@ -100,21 +100,23 @@ function BarbEvolvedPlotCheck(pPlayer, pPlot, iNumTechs)
 	]]--
 
 	-- do we spawn?
-	if (Game.GetElapsedGameTurns() == 0) and pPlot:IsStartingPlot() then
-		-- spawn a defending scout on turn 0
-		-- whose plot is this?
-		local sPlotOwner = ""
-
+	-- if (Game.GetElapsedGameTurns() == 0) and pPlot:IsStartingPlot() then
+	if pPlot:IsStartingPlot() then
+		-- spawn a occupying settler if required
+		-- whose plot is this? iterate all minors to discover
 		for iCityState = GameDefines.MAX_MAJOR_CIVS, GameDefines.MAX_CIV_PLAYERS - 1, 1 do
 			local pCityState = Players[iCityState]
 			local pCSPlot = pCityState:GetStartingPlot()
 			if pCSPlot == pPlot then
-				-- spawn the barb (note: this should only trigger once)
-				print("BarbEvolvedPlotCheck: Spawning a turn 0 unit on plot [" .. pPlot:GetX() .. "," .. pPlot:GetY() .. "] for [" .. pCityState:GetName() .. "]")
-				newbarb = Players[iBarbNPCs]:InitUnit(GameInfoTypes.UNIT_IMMOBILE_SETTLER, pPlot:GetX(), pPlot:GetY(), UNITAI_DEFENSE)
-				if (newbarb ~= nil) then
-					-- rename the barb
-					newbarb:SetName(pCityState:GetCivilizationAdjective() .. " " .. newbarb:GetName())
+				-- has the plot been vacated for some reason?
+				if (pPlot:GetUnit(0) == nil) then
+					-- if so... spawn the barb settler
+					print("BarbEvolvedPlotCheck: (Re)Spawning a Barbarian Settler on plot [" .. pPlot:GetX() .. "," .. pPlot:GetY() .. "] for [" .. pCityState:GetName() .. "]")
+					newbarb = Players[iBarbNPCs]:InitUnit(GameInfoTypes.UNIT_IMMOBILE_SETTLER, pPlot:GetX(), pPlot:GetY(), UNITAI_DEFENSE)
+					if (newbarb ~= nil) then
+						-- rename the settler
+						newbarb:SetName(pCityState:GetCivilizationAdjective() .. " " .. newbarb:GetName())
+					end
 				end
 			end
 		end
@@ -1005,7 +1007,11 @@ function FoundCity(owner, x, y)
 	else
 		print("FoundCity: instantly founding city at [" .. x .. "], [" .. y .. "]")
 		-- owner:Found(x, y)
-		owner:InitCity(x, y)
+		newcity = owner:InitCity(x, y)
+	end
+
+	if (Game.GetActivePlayer() == owner:GetID()) then
+		UI.LookAt(Map.GetPlot(x, y))
 	end
 end
 
@@ -1996,7 +2002,7 @@ function BarbEvolvedPolicyWindback(playerid)
 	end
 
 	-- Adopt the Barbarous policy, which helps with financial matters
-	if not pPlayer:HasPolicy(iBarbPolicy) then
+	if IsBarbaricCiv(playerid) and not pPlayer:HasPolicy(iBarbPolicy) then
 		print("BarbEvolvedPolicyWindback: Adopting policy id [" .. iBarbPolicy .. "]")
 		pPlayer:SetHasPolicy(iBarbPolicy, true)
 	end
@@ -2005,7 +2011,8 @@ end
 --########################################################################
 -- Ban Barbarians from all processes (wealth, research, etc)
 function BarbEvolvedCantProcess(player, city, process)
-	if IsBarbNPCs(player) then
+    -- stop AI-driven Barbarians from engaging in processes, but allow human Barbarians to do them
+	if IsBarbNPCs(player) and (Game.GetActivePlayer() ~= player) then
 		return false
 	end
 
