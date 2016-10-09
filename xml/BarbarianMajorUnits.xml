@@ -1,9 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Created by ModBuddy on 02/13/2016 10:50:32 AM -->
 <GameData>
+	<UnitClasses>
+		<Row>
+			<Type>UNITCLASS_EVOLVED_CS_MARKER</Type>
+			<Description>TXT_KEY_UNIT_SETTLER</Description>
+			<DefaultUnit>UNIT_IMMOBILE_SETTLER</DefaultUnit>
+		</Row>
+	</UnitClasses>
 	<Units>
 		<Row>
-			<Class>UNITCLASS_SETTLER</Class>
+			<Class>UNITCLASS_EVOLVED_CS_MARKER</Class>
 			<Type>UNIT_IMMOBILE_SETTLER</Type>
 			<Combat>6</Combat>
 			<Moves>2</Moves>
@@ -19,9 +26,11 @@
 			<Civilopedia>TXT_KEY_CIV5_ANTIQUITY_SETTLER_TEXT</Civilopedia>
 			<Strategy>TXT_KEY_UNIT_SETTLER_STRATEGY</Strategy>
 			<Help>TXT_KEY_UNIT_HELP_SETTLER</Help>
+<!--
 			<Food>true</Food>
 			<Found>true</Found>
 			<CombatLimit>0</CombatLimit>
+-->
 			<UnitArtInfo>ART_DEF_UNIT__SETTLER</UnitArtInfo>
 			<UnitArtInfoCulturalVariation>true</UnitArtInfoCulturalVariation>
 			<PortraitIndex>0</PortraitIndex>
