@@ -13,28 +13,40 @@
 			<Class>UNITCLASS_EVOLVED_CS_MARKER</Class>
 			<Type>UNIT_IMMOBILE_SETTLER</Type>
 			<Combat>6</Combat>
-			<Moves>2</Moves>
+			<Cost>20</Cost>
+			<Moves>0</Moves>
+			<Immobile>true</Immobile>
 <!--
 			<Capture>UNITCLASS_WORKER</Capture>
 			<CivilianAttackPriority>CIVILIAN_ATTACK_PRIORITY_LOW</CivilianAttackPriority>
--->
-			<Immobile>true</Immobile>
 			<HurryCostModifier>20</HurryCostModifier>
+-->
+			<CombatClass>UNITCOMBAT_MELEE</CombatClass>
 			<Domain>DOMAIN_LAND</Domain>
-			<DefaultUnitAI>UNITAI_SETTLE</DefaultUnitAI>
+			<DefaultUnitAI>UNITAI_EXPLORE</DefaultUnitAI>
 			<Description>TXT_KEY_UNIT_SETTLER</Description>
 			<Civilopedia>TXT_KEY_CIV5_ANTIQUITY_SETTLER_TEXT</Civilopedia>
 			<Strategy>TXT_KEY_UNIT_SETTLER_STRATEGY</Strategy>
 			<Help>TXT_KEY_UNIT_HELP_SETTLER</Help>
+			<ShowInPedia>false</ShowInPedia>
+			<MilitarySupport>true</MilitarySupport>
+			<MilitaryProduction>true</MilitaryProduction>
+			<Pillage>true</Pillage>
+			<AdvancedStartCost>10</AdvancedStartCost>
 <!--
 			<Food>true</Food>
 			<Found>true</Found>
 			<CombatLimit>0</CombatLimit>
--->
 			<UnitArtInfo>ART_DEF_UNIT__SETTLER</UnitArtInfo>
 			<UnitArtInfoCulturalVariation>true</UnitArtInfoCulturalVariation>
+-->
+			<XPValueAttack>3</XPValueAttack>
+			<XPValueDefense>3</XPValueDefense>
+			<Conscription>1</Conscription>
+			<UnitArtInfo>ART_DEF_UNIT_SCOUT</UnitArtInfo>
 			<PortraitIndex>0</PortraitIndex>
 			<IconAtlas>UNIT_ATLAS_1</IconAtlas>
+			<MoveRate>HEAVY_BIPED</MoveRate>
 		</Row>
 		<Row>
 			<Class>UNITCLASS_WORKER</Class>

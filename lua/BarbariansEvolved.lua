@@ -115,7 +115,7 @@ function BarbEvolvedPlotCheck(pPlayer, pPlot, iNumTechs)
 					newbarb = Players[iBarbNPCs]:InitUnit(GameInfoTypes.UNIT_IMMOBILE_SETTLER, pPlot:GetX(), pPlot:GetY(), UNITAI_DEFENSE)
 					if (newbarb ~= nil) then
 						-- rename the settler
-						-- newbarb:SetName(pCityState:GetCivilizationAdjective() .. " " .. newbarb:GetName())
+						newbarb:SetName(pCityState:GetCivilizationAdjective() .. " " .. newbarb:GetName())
 					end
 				end
 			end
