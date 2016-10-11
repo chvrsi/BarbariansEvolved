@@ -42,7 +42,7 @@ INSERT INTO Civilization_UnitClassOverrides (CivilizationType, UnitClassType, Un
 INSERT INTO Civilization_UnitClassOverrides (CivilizationType, UnitClassType, UnitType) SELECT 'CIVILIZATION_BARBARIAN_MAJOR', UnitClassType, UnitType FROM Civilization_UnitClassOverrides WHERE CivilizationType = 'CIVILIZATION_BARBARIAN' AND UnitType IS NOT NULL;
 
 -- lock UNITCLASS_EVOLVED_CS_MARKER for all civs except Tribal Barbarians
-INSERT INTO Civilization_UnitClassOverrides (CivilizationType, UnitClassType, UnitType) SELECT Type, 'UNITCLASS_EVOLVED_CS_MARKER', null FROM Civilizations WHERE Type <> 'CIVILIZATION_BARBARIAN';
+INSERT INTO Civilization_UnitClassOverrides (CivilizationType, UnitClassType, UnitType) SELECT Type, 'UNITCLASS_EVOLVED_CS_MARKER', null FROM Civilizations; -- WHERE Type <> 'CIVILIZATION_BARBARIAN';
 
 INSERT INTO Civilization_UnitClassOverrides (CivilizationType, UnitClassType, UnitType) VALUES ('CIVILIZATION_BARBARIAN_MAJOR', 'UNITCLASS_EVOLVED_CS_MARKER', null);
 
