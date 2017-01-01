@@ -92,9 +92,14 @@ end
 --########################################################################
 -- ReportRead - spams out the reads to debug (because they're all strings, right?)
 -- also forces typing by converting string'd booleans and ints to their respective types
+-- 2016-12-02: thanks to user Mile on steam, fixed not accounting for NULL - thanks
 function BEReportRead(dataobj, datastring)
-	print("READ: " .. datastring .. " [" .. dataobj.GetValue(datastring) .. "]")
 	retval = dataobj.GetValue(datastring)
+	if (retval == nil) then
+		print("READ: " .. datastring .. " [ERROR: NULL VALUE]")
+	else
+		print("READ: " .. datastring .. " [" .. dataobj.GetValue(datastring) .. "]")
+	end
 
 	-- what we return depends on what type it is, fortunately I use Hungarian out of habit, saved my ass here
 	-- yes, I know lua isn't strongly typed, I don't care
@@ -102,20 +107,32 @@ function BEReportRead(dataobj, datastring)
 
 	-- boolean
 	if (firstchar == "b") then
-		if (retval == 0) then
+		if (retval == nil) then
 			return false
 		else
-			return true
+			if (retval == 0) then
+				return false
+			else
+				return true
+			end
 		end
 	end
 
 	-- integer
 	if (firstchar == "i") then
-		return tonumber(retval)
+		if (retval == nil) then
+			return 0
+		else
+			return tonumber(retval)
+		end
 	end
 
 	-- string or array masquerading as string
-	return retval
+	if (retval == nil) then
+		return ""
+	else
+		return retval
+	end
 end
 
 --########################################################################
