@@ -248,3 +248,11 @@ iBarbWorkerLimit = 4
 sMinorPlayerColor = "PLAYERCOLOR_BARBARIAN"
 
 sMajorPlayerColor = "PLAYERCOLOR_BARBARIAN_MAJOR"
+
+-- newer params
+-- these are used in the setup screen only, except for bBarbEvolveCityStates.  You probably shouldn't mess with these, ever.
+bBarbMajorAllyExists = true
+
+bBarbMajorAllyAsMe = false
+
+bBarbEvolveCityStates = false

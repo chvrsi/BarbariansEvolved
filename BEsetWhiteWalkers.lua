@@ -105,3 +105,10 @@ iBarbWorkerLimit = 4
 sMinorPlayerColor = "PLAYERCOLOR_BARBARIAN_NIGHTMARE"
 
 sMajorPlayerColor = "PLAYERCOLOR_BARBARIAN_NIGHTMARE"
+
+-- newer params
+bBarbMajorAllyExists = false
+
+bBarbMajorAllyAsMe = false
+
+bBarbEvolveCityStates = false
